@@ -1,0 +1,214 @@
+{
+  "ActiveBlockLink": {
+    "Reference": {
+      "Guid": "00000000-0000-0000-0000-000000000000",
+      "Name": ""
+    },
+    "IsValidReference": false
+  },
+  "Sounds": {
+    "ViewTheseOptions": false,
+    "Sounds": [],
+    "SoundCount": 0
+  },
+  "SubObjects": {
+    "ViewTheseOptions": false,
+    "SubObjectCount": 0,
+    "SubObjects": []
+  },
+  "MeshReference": {
+    "Reference": {
+      "Guid": "2d1c375c-eb83-4006-bcfa-cf3374386409",
+      "Name": "AdvancedShieldControllerMesh"
+    },
+    "IsValidReference": true
+  },
+  "MaterialReference": {
+    "Reference": {
+      "Guid": "283ce488-4c43-4e0b-b0fb-52c2f2b34183",
+      "Name": "laser mat"
+    },
+    "IsValidReference": true
+  },
+  "MirrorLaterialFlipReplacementReference": {
+    "Reference": {
+      "Guid": "00000000-0000-0000-0000-000000000000",
+      "Name": ""
+    },
+    "IsValidReference": false
+  },
+  "MirrorVerticalFlipReplacementReference": {
+    "Reference": {
+      "Guid": "00000000-0000-0000-0000-000000000000",
+      "Name": ""
+    },
+    "IsValidReference": false
+  },
+  "SizeInfo": {
+    "ViewTheseOptions": true,
+    "SizePos": {
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    "SizeNeg": {
+      "x": 1,
+      "y": 1,
+      "z": 1
+    },
+    "VolumeFactor": 1.0,
+    "VolumeBuoyancyExtraFactor": 1.0,
+    "ArrayPositionsUsed": 27,
+    "LocalCenter": "0,0,0"
+  },
+  "AttachDirections": {
+    "Up": true,
+    "Down": true,
+    "Right": true,
+    "Left": true,
+    "Forwards": true,
+    "Back": true
+  },
+  "SupportDirections": {
+    "Up": false,
+    "Down": false,
+    "Right": false,
+    "Left": false,
+    "Forwards": false,
+    "Back": false
+  },
+  "AllowAttachingDirections": null,
+  "Weight": 0.01,
+  "Health": 1000.0,
+  "ArmourClass": 50.0,
+  "eRadarCrossSection": 30,
+  "RadarRelativeCrossSection": 0.03,
+  "ExtraSettings": {
+    "CreateListOfTheseBlocks": true,
+    "UseCustomName": false,
+    "ExplosionOnDeath": 0,
+    "ViewTheseOptions": false,
+    "UseALowLodRender": true,
+    "WaterTight": true,
+    "BlockPathfinding": true,
+    "ViewMeshWhenPlacing": true,
+    "LocalRotationToForward": false,
+    "InventoryLinkUp": false,
+    "InventoryLinkDown": false,
+    "InventoryLinkLeft": false,
+    "InventoryLinkRight": false,
+    "PlaceableOnFortress": true,
+    "PlaceableOnStructure": true,
+    "PlaceableOnVehicle": true,
+    "PlaceableOnSubConstructable": 2,
+    "AutomaticallyGenerateCollider": true,
+    "StructuralComponent": false,
+    "EmpSusceptibility": 0.0,
+    "EmpResistivity": 2.0,
+    "EmpDamageFactor": 1.0,
+    "FractionHeatDamagePerMeterPenetration": 0.05,
+    "AllowsExhaust": false,
+    "AllowsVisibleBandTransmission": false,
+    "AllowsIrBandTransmission": false,
+    "AllowsRadarBandTransmission": false,
+    "AllowsSonarBandTransmission": false,
+    "RenderInImportantView": false
+  },
+  "DragSettings": {
+    "DragClearancePositions": [],
+    "DragFactorNeg": "1,1,1",
+    "DragFactorPos": "1,1,1",
+    "DragStopper": true,
+    "ViewTheseOptions": false,
+    "Geometry": 0
+  },
+  "Code": {
+    "GroupConnectionInfo": {
+      "BlockGroupReference": {
+        "Reference": {
+          "Guid": "00000000-0000-0000-0000-000000000000",
+          "Name": ""
+        },
+        "IsValidReference": false
+      },
+      "ViewTheseOptions": true,
+      "MatchCoreBlockOrientation": false,
+      "ReceiveDirections": {
+        "Up": true,
+        "Down": true,
+        "Right": true,
+        "Left": true,
+        "Forwards": true,
+        "Back": true
+      },
+      "SendDirections": {
+        "Up": false,
+        "Down": false,
+        "Right": false,
+        "Left": false,
+        "Forwards": false,
+        "Back": false
+      },
+      "ExtraRightUpForwardElementJumps": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "ExtraLeftDownBackElementJumps": {
+        "x": 1,
+        "y": 1,
+        "z": 0
+      },
+      "SpreadToTypePermissions": "00000100000000000000000000000000"
+    },
+    "ViewTheseOptions": true,
+    "Variables": {
+      "Variables": [],
+      "VariableCount": 0
+    },
+    "ClassName": "AdvShieldProjector"
+  },
+  "ItemType": 0,
+  "LowLevelOfDetailColor": "0.5,0.5,0.5,1",
+  "DisplayName": "Advanced Shield Controller",
+  "InventoryNameOverride": "",
+  "InventoryCategoryNameOverride": "",
+  "DisplayOnInventory": true,
+  "InventoryXPosition": 0,
+  "InventoryYPosition": 0,
+  "InventoryTabOrVariantId": {
+    "Reference": {
+      "Guid": "678bde4d-69eb-4241-a40b-c51ad93bfa56",
+      "Name": "Advanced Shields"
+    },
+    "IsValidReference": true
+  },
+  "IconReference": {
+    "Reference": {
+      "Guid": "00000000-0000-0000-0000-000000000000",
+      "Name": ""
+    },
+    "IsValidReference": false
+  },
+  "Complexity": 0,
+  "Unlock": null,
+  "HelpPageIdentifierReference": {
+    "Reference": {
+      "Guid": "00000000-0000-0000-0000-000000000000",
+      "Name": ""
+    },
+    "IsValidReference": false
+  },
+  "ExternalLink": {
+    "Name": "",
+    "Url": ""
+  },
+  "Cost": {
+    "Material": 50.0
+  },
+  "ComponentId": {
+    "Guid": "19501969-a2e4-48ba-aff0-9ea44cb189e1",
+    "Name": "Advanced Shield Controller"
+  },
+  "Description": "Creates a Dome Shield. Attach to a laser system"
+}

@@ -1,0 +1,19 @@
+{
+  "FilenameOrUrl": "ShieldDomeNormalMap.obj",
+  "Source": 0,
+  "DefaultMaterialForDisplayReference": {
+    "Reference": {
+      "Guid": "00000000-0000-0000-0000-000000000000",
+      "Name": ""
+    },
+    "IsValidReference": false
+  },
+  "XImportScaleFactor": 1.0,
+  "YImportScaleFactor": 1.0,
+  "ZImportScaleFactor": 1.0,
+  "ComponentId": {
+    "Guid": "96ea5ba1-ee98-4b73-88cf-ffd9d4eb0ca9",
+    "Name": "ShieldDomeGrid"
+  },
+  "Description": "New description"
+}

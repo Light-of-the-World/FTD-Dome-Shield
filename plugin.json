@@ -1,0 +1,10 @@
+{
+  "_comments": "Full cover guaranteed!",
+  "name": "AdvancedShields",
+  "version": "1.0",
+  "depends": [""],
+  "conflicts": [],
+  "filename": "Src/ExampleMod/bin/Release/AdvShields.dll",
+  "gameversion": "2.6.1.4"
+}
+

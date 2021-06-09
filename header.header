@@ -1,0 +1,9 @@
+{
+  "Authors": "Authors include Samades",
+  "Version": "00000000-0000-0000-0000-000000000000",
+  "ComponentId": {
+    "Guid": "2e123770-e0d1-4916-9e12-454d1f027033",
+    "Name": "Advanced Shields"
+  },
+  "Description": "New mod description"
+}

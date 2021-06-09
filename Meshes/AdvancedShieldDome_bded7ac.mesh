@@ -1,0 +1,19 @@
+{
+  "FilenameOrUrl": "AdvancedShieldDome.obj",
+  "Source": 0,
+  "DefaultMaterialForDisplayReference": {
+    "Reference": {
+      "Guid": "00000000-0000-0000-0000-000000000000",
+      "Name": ""
+    },
+    "IsValidReference": false
+  },
+  "XImportScaleFactor": 1.0,
+  "YImportScaleFactor": 1.0,
+  "ZImportScaleFactor": 1.0,
+  "ComponentId": {
+    "Guid": "bded7ac0-91d2-41a4-bede-923ed1e34eb6",
+    "Name": "AdvancedShieldDome"
+  },
+  "Description": "New Description"
+}

@@ -1,0 +1,19 @@
+{
+  "FilenameOrUrl": "AdvShieldController.obj",
+  "Source": 0,
+  "DefaultMaterialForDisplayReference": {
+    "Reference": {
+      "Guid": "00000000-0000-0000-0000-000000000000",
+      "Name": ""
+    },
+    "IsValidReference": false
+  },
+  "XImportScaleFactor": 1.0,
+  "YImportScaleFactor": 1.0,
+  "ZImportScaleFactor": 1.0,
+  "ComponentId": {
+    "Guid": "2d1c375c-eb83-4006-bcfa-cf3374386409",
+    "Name": "AdvancedShieldControllerMesh"
+  },
+  "Description": "New description"
+}
