@@ -7,7 +7,7 @@ using BrilliantSkies.Modding.Containers;
 using BrilliantSkies.Modding.Types;
 using BrilliantSkies.Ui.Layouts;
 using BrilliantSkies.Ui.Tips;
-using Harmony;
+using HarmonyLib;
 using UnityEngine;
 using System.Linq;
 using AdvShields.Models;
@@ -23,7 +23,7 @@ namespace AdvShields
     {
         public void OnLoad()
         {
-            var harmony = HarmonyInstance.Create("com.BarrelRenderPatch");
+            var harmony = new Harmony("com.BarrelRenderPatch");
             harmony.PatchAll(Assembly.GetExecutingAssembly());
 
         }
@@ -94,7 +94,7 @@ namespace AdvShields
 
     //    protected override string FileExtension => ".myWidget";
     //}
-    
+
     //public class ModWidget : ModComponentAbstract
     //{
     //    public string OurUselessString { get; set; } = "Useless string";

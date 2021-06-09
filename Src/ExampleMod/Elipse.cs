@@ -11,7 +11,7 @@ using BrilliantSkies.GridCasts;
 using BrilliantSkies.Ftd.Constructs.Modules.All.StandardExplosion;
 using BrilliantSkies.Ftd.DamageModels;
 using System.Reflection;
-using Harmony;
+using HarmonyLib;
 using BrilliantSkies.Core.UniverseRepresentation;
 using BrilliantSkies.Common.Explosions;
 using BrilliantSkies.Core.Pooling;
