@@ -234,6 +234,7 @@ namespace AdvShields
 
             Debug.Log("Advanced Shields: Block Start end");
         }
+
         /*
         public override void SetExtraInfo(ExtraInfoArrayReadPackage v)
         {
@@ -253,6 +254,7 @@ namespace AdvShields
             ShieldData.Color.Us = new Color(v.GetNextFloat(), v.GetNextFloat(), v.GetNextFloat(), v.GetNextFloat());
         }
         */
+
 
 
         public override void StateChanged(IBlockStateChange change)
@@ -427,7 +429,8 @@ namespace AdvShields
             //ShieldClass.SetPositionSizeRotation(new Vector3(0.0f, 0.0f, 0), new Vector3(ShieldData.Width, ShieldData.Height, ShieldData.Length), Quaternion.Euler(ShieldData.Elevation, ShieldData.Azimuth, 0.0f));
             //ShieldClass.SetColor(ShieldData.Color);
             ShieldDome.UpdateSizeInfo(ShieldData);
-            VisualData.BaseColor.Us = ShieldData.Color;
+            //VisualData.BaseColor.Us = ShieldData.BaseColor;
+            //VisualData.GridColor.Us = ShieldData.GridColor;
             MainConstruct.ShieldsChanged();
         }
 
