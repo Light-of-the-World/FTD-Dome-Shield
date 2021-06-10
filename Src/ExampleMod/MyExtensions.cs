@@ -99,10 +99,6 @@ namespace AdvShields
 
                 if (elipse.CheckIntersection(position, radius))
                 {
-                    //ExplosionDamageDescription dd = new ExplosionDamageDescription(gunner, damage, radius, position, damageMissiles);
-                    //item.ShieldHandler.GridcastHit = position;
-                    //item.ShieldHandler.ApplyDamage(dd);
-
                     new ApplyDamageCallback(item.ShieldHandler, position, radius, damage, gunner).Enqueue();
                 }
             }
@@ -114,7 +110,7 @@ namespace AdvShields
     {
         private static void Postfix(ref GridCastReturn results)
         {
-            foreach (var item in TypeStorage.GetObjects())
+            foreach (AdvShieldProjector item in TypeStorage.GetObjects())
             {
                 AdvShieldData d = item.ShieldData;
                 if (d.Type == enumShieldDomeState.Off) continue;

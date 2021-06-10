@@ -103,8 +103,11 @@ namespace AdvShields
 
         public void Update()
         {
-            if (Time.time - TimeSinceLastHit < WaitTime) return;
-            if (CurrentDamageSustained == 0.0f) return;
+            if (Time.time - TimeSinceLastHit < WaitTime)
+                return;
+
+            if (CurrentDamageSustained == 0.0f)
+                return;
 
             foreach (LaserNode laserNode in controller.LaserPromisedTo())
             {

@@ -81,24 +81,35 @@ namespace AdvShields
 {
     public class AdvShieldProjector : BlockWithControl
     {
-        // Original
-        public ShieldDomeBehaviour ShieldDome;
-        public ICarriedObjectReference CarriedObject;
-        private readonly Rect m_ColoringShieldWindowRect = new Rect(850f, 530f, 425f, 265f);
         public const float BasePowerCost = 0.005f;
-        public VelocityMeasurement VelocityMeasurement;
-        private BlockModule_Hot Hot;
-        public float reliabilityTimeCheck;
-        public IPowerRequestRecurring PowerUse;
         private const float ENHANCED_WINDOW_TOP = 530f;
         private const float ENHANCED_WINDOW_LEFT = 850f;
         private const float ENHANCED_WINDOW_MARGIN = 5f;
+
+        public static float GetDisruptionRegenerationRate(float powerUse)
+        {
+            return Mathf.Pow(powerUse, 0.5f) * 0.04f;
+        }
+
+
+
+        // Original
+        private ICarriedObjectReference CarriedObject;
+
+        private readonly Rect m_ColoringShieldWindowRect = new Rect(850f, 530f, 425f, 265f);
+
+        private VelocityMeasurement VelocityMeasurement;
+
+        private BlockModule_Hot Hot;
+
+        private float reliabilityTimeCheck;
+
         private ActivateCallback _activateCallback;
 
         private Material _material;
 
-        //private static Mesh ShieldMesh;
-        //^deleted comment
+        public IPowerRequestRecurring PowerUse { get; set; }
+        public ShieldDomeBehaviour ShieldDome { get; set; }
         public AdvShieldData ShieldData { get; set; } = new AdvShieldData(0U);
         public AdvShieldHandler ShieldHandler { get; set; }
         public AdvShieldVisualData VisualData { get; set; }
@@ -110,39 +121,54 @@ namespace AdvShields
         private LaserNode[] _laserNodes = new LaserNode[6];
 
         public Vector3i[] LaserComponentPositions { get; protected set; }
+
         public IHasLaser[] LaserComponentPromisedTo { get; protected set; }
 
         public LaserDamageHelper _damageHelper { get; protected set; }
 
-        protected override void RunControl(StimulusDirection stimDirection)
+
+
+        public VarIntClamp Priority { get; set; } = new VarIntClamp(0, -50, 50, NoLimitMode.None);
+
+        public PowerUserData PriorityData { get; set; } = new PowerUserData(34852U);
+
+        public float CurrentStrength { get; private set; }
+
+        public bool IsActive
         {
-            if (stimDirection == StimulusDirection.Positive)
+            get
             {
-                ShieldData.ExcessDrive.Us = Mathf.Clamp(ShieldData.ExcessDrive + 2f * UnityEngine.Time.timeScale, 0.0f, 10f);
+                return ShieldData.Type != enumShieldDomeState.Off;
+            }
+        }
+
+        public bool DoesConstructHaveOtherShields
+        {
+            get
+            {
+                return MainConstruct.NodeSetsRestricted.RingShieldNodes.NodeCount > 0 || MainConstruct.iBlockTypeStorage.ShieldProjectorStore.Count > 0;
+            }
+        }
+
+
+
+
+        public override void ItemSet()
+        {
+            base.ItemSet();
+
+            if (Configured.i == null) return;
+
+            ItemGroupDefinition itemGroupDefinition = Configured.i.ItemGroups.Find(new Guid("5166eac9-7c5c-4f6e-a96f-4604d7efbf23"), out bool found);
+
+            if (!found)
+            {
+                Debug.Log("Could not find the laser component ID");
             }
             else
             {
-                if (stimDirection != StimulusDirection.Negative)
-                    return;
-                ShieldData.ExcessDrive.Us = Mathf.Clamp(ShieldData.ExcessDrive - 2f * UnityEngine.Time.timeScale, 0.0f, 10f);
+                _laserSetComponentId = itemGroupDefinition.ComponentId.RuntimeId;
             }
-        }
-        public VarIntClamp Priority { get; set; } = new VarIntClamp(0, -50, 50, NoLimitMode.None);
-        public void Set(int value)
-        {
-            this.Priority.Us = value;
-        }
-        public int Get()
-        {
-            return this.Priority.Us;
-        }
-        public PowerUserData PriorityData { get; set; } = new PowerUserData(34852U);
-        protected override void RunControlFromDrive(StimulusDirection stimDirection, float driveValue)
-        {
-            if (stimDirection != StimulusDirection.Positive && stimDirection != StimulusDirection.Negative)
-                return;
-            driveValue = Mathf.Clamp(driveValue, 0.0f, 10f);
-            ShieldData.ExcessDrive.Us = driveValue;
         }
 
         public override void BlockStart()
@@ -156,30 +182,32 @@ namespace AdvShields
             gameObject.transform.localPosition = Transforms.LocalToGlobal(Vector3.zero, GameWorldPosition, GameWorldRotation);
             gameObject.transform.localRotation = Transforms.LocalRotationToGlobalRotation(Quaternion.identity, GameWorldRotation);
 
-            CarriedObject = CarryThisWithUs(gameObject, LevelOfDetail.Low);
             ShieldDome = gameObject.GetComponent<ShieldDomeBehaviour>();
+            _material = gameObject.GetComponent<MeshRenderer>().material;
+
+            CarriedObject = CarryThisWithUs(gameObject, LevelOfDetail.Low);
+
             ShieldHandler = new AdvShieldHandler(this);
             //Added Get and Set priority
             //SetShieldSizeAndPosition();
             //PoweredDecoy CurrentPower = base.TargetPower.PowerUse.Us;
-            PowerUse = new PowerRequestRecurring(this, PowerRequestType.Shield, new Func<int>
-                (this.PriorityData.Get), new Action<int>(this.PriorityData.Set))
+            PowerUse = new PowerRequestRecurring(this, PowerRequestType.Shield, PriorityData.Get, PriorityData.Set)
             {
-                fnSetRequestLevel = new Action<IPowerRequestRecurring>(Allow),
-                fnCalculateIdealPowerUse = new Action<IPowerRequestRecurring>(IdealUse),
+                fnSetRequestLevel = Allow,
+                fnCalculateIdealPowerUse = IdealUse,
             };
             // yay
             VelocityMeasurement = new VelocityMeasurement(new UniversePositionReturnBlockInMainFrame(this, PositionReturnBlockValidRequirement.Alive));
-            BlockModule_Hot blockModuleHot = new BlockModule_Hot((Block)this);
+            BlockModule_Hot blockModuleHot = new BlockModule_Hot(this);
             blockModuleHot.TemperatureIncreaseUnderFullUsagePerSecond = 0.0f;
             blockModuleHot.CoolingFractionPerSecond = 0.15f;
             blockModuleHot.TotalTemperatureWeighting = 0.2f;
             Hot = blockModuleHot;
             Hot.SetWeightings(LocalForward);
 
-            ShieldData.SetChangeAction(new Action(SetShieldSizeAndPosition), false);
+            ShieldData.SetChangeAction(SetShieldSizeAndPosition, false);
 
-            _material = gameObject.GetComponent<MeshRenderer>().material;
+
             VisualData = new AdvShieldVisualData(1);
             SetVisualDataEvents();
 
@@ -206,6 +234,181 @@ namespace AdvShields
 
             Debug.Log("Advanced Shields: Block Start end");
         }
+        /*
+        public override void SetExtraInfo(ExtraInfoArrayReadPackage v)
+        {
+            base.SetExtraInfo(v);
+
+            v.FindDelimiterAndSpoolToIt(DelimiterType.ShieldProjector, false);
+            int orEndOfArrayIfNot = v.ElementsToDelimiterIfThereIsOneOrEndOfArrayIfNot(DelimiterType.ShieldProjector, false);
+            if (orEndOfArrayIfNot < 7) return;
+            ShieldData.Length.Us = v.GetNextFloat();
+            ShieldData.Height.Us = v.GetNextFloat();
+            ShieldData.Width.Us = v.GetNextFloat();
+            ShieldData.ExcessDrive.Us = v.GetNextFloat();
+            ShieldData.Azimuth.Us = v.GetNextFloat();
+            ShieldData.Elevation.Us = v.GetNextFloat();
+            ShieldData.Type.Us = (enumShieldDomeState)v.GetNextInt();
+            if (orEndOfArrayIfNot < 11) return;
+            ShieldData.Color.Us = new Color(v.GetNextFloat(), v.GetNextFloat(), v.GetNextFloat(), v.GetNextFloat());
+        }
+        */
+
+
+        public override void StateChanged(IBlockStateChange change)
+        {
+            base.StateChanged(change);
+
+            if (change.IsAvailableToConstruct)
+            {
+                TypeStorage.AddObject(this);
+                //Objects.Instance.Shields.Add(this)
+                //MainConstruct.iBlockTypeStorage.ShieldProjectorStore.Add(this); 
+                MainConstruct.PowerUsageCreationAndFuelRestricted.AddRecurringPowerUser(PowerUse);
+                MainConstruct.HotObjectsRestricted.AddHotObject(Hot);
+                MainConstruct.ShieldsChanged();
+                //MainConstruct.SchedulerRestricted.RegisterForLateUpdate(new Action(ShieldClass.UpdateColorBasedOnHit));
+                MainConstruct.SchedulerRestricted.RegisterFor1PerSecond(new Action<ISectorTimeStep>(Update));
+            }
+
+            if (change.IsLostToConstructOrConstructLost)
+            {
+                TypeStorage.RemoveObject(this);
+                //Objects.Instance.Shields.Remove(base);
+                //MainConstruct.iBlockTypeStorage.ShieldProjectorStore.Remove(this);
+                MainConstruct.PowerUsageCreationAndFuelRestricted.RemoveRecurringPowerUser(PowerUse);
+                MainConstruct.HotObjectsRestricted.RemoveHotObject((IHotObject)Hot);
+                MainConstruct.ShieldsChanged();
+                //MainConstruct.SchedulerRestricted.UnregisterForLateUpdate(new Action(ShieldClass.UpdateColorBasedOnHit));
+                MainConstruct.SchedulerRestricted.UnregisterFor1PerSecond(new Action<ISectorTimeStep>(Update));
+            }
+        }
+
+        public override void CheckStatus(IStatusUpdate updater)
+        {
+            base.CheckStatus(updater);
+            if (ShieldData.Width * ShieldData.Height < 1.00999999046326)
+                updater.FlagWarning(this, "Should be larger than 1x1");
+            if (!DoesConstructHaveOtherShields)
+                return;
+            updater.FlagError(this, "Shield domes don't work if there are shield rings or shield projectors on the vehicle");
+        }
+
+        public override void PrepForDelete()
+        {
+            //ShieldClass.CleanUp();
+        }
+
+        public override void SyncroniseUpdate(bool b1)
+        {
+            SetShieldState(b1, false);
+        }
+
+
+
+        protected override void RunControl(StimulusDirection stimDirection)
+        {
+            if (stimDirection == StimulusDirection.Positive)
+            {
+                ShieldData.ExcessDrive.Us = Mathf.Clamp(ShieldData.ExcessDrive + 2f * UnityEngine.Time.timeScale, 0.0f, 10f);
+            }
+            else if (stimDirection == StimulusDirection.Negative)
+            {
+                ShieldData.ExcessDrive.Us = Mathf.Clamp(ShieldData.ExcessDrive - 2f * UnityEngine.Time.timeScale, 0.0f, 10f);
+            }
+        }
+
+        protected override void RunControlFromDrive(StimulusDirection stimDirection, float driveValue)
+        {
+            if (stimDirection == StimulusDirection.None) return;
+
+            driveValue = Mathf.Clamp(driveValue, 0.0f, 10f);
+            ShieldData.ExcessDrive.Us = driveValue;
+        }
+
+
+
+        public override BlockTechInfo GetTechInfo()
+        {
+            return new BlockTechInfo().AddStatement("Shields have a reduction in reflect effectiveness when moving at high speeds").AddStatement("Shield Domes cannot run when Shield Rings or Shield Projectors are present on your vehicle");
+        }
+
+        protected override void AppendToolTip(ProTip tip)
+        {
+            base.AppendToolTip(tip);
+
+            float driveAfterFactoring = GetExcessDriveAfterFactoring();
+            bool flag_0 = CurrentStrength < driveAfterFactoring;
+            string text_0 = "This shield turned off and is therefore inactive";
+
+            if (ShieldData.Type.Us == enumShieldDomeState.On)
+            {
+                text_0 = "This shield is turned on";
+            }
+
+            AdvShieldDomeData domeStats = ShieldHandler.GetDomeStats();
+            float currentHealth = domeStats.GetCurrentHealth(ShieldHandler.CurrentDamageSustained);
+            string text_1 = "Shield is fully charged";
+            float progress = 1.0f;
+
+            if (ShieldHandler.CurrentDamageSustained > 0.0f)
+            {
+                float secondsSinceLastHit = UnityEngine.Time.time - ShieldHandler.TimeSinceLastHit;
+                float timeRemaining = AdvShieldHandler.WaitTime - secondsSinceLastHit;
+
+                if (timeRemaining <= 0.0f)
+                {
+                    text_1 = $"Shield is recharging, {currentHealth / domeStats.MaxHealth * 100:F1} % complete.";
+                }
+                else
+                {
+                    text_1 = $"Time until recharge: {timeRemaining:F1}s";
+                    progress = Mathf.Clamp01(Mathf.SmoothStep(0, 1, secondsSinceLastHit / AdvShieldHandler.WaitTime));
+                }
+            }
+
+            tip.SetSpecial(UniqueTipType.Name, new ProTipSegment_TitleSubTitle("Shield dome", "Projects a defensive shield around itself"));
+            tip.Add(new ProTipSegment_TextAdjustable(500, string.Format("Total drive {0} (basic drive {1} and an external factor of {2})", driveAfterFactoring, ShieldData.ExcessDrive, ShieldData.ExternalDriveFactor)), Position.Middle);
+            if (flag_0) tip.Add(new ProTipSegment_TextAdjustable(500, string.Format("Charging, effective drive: {0}", Rounding.R2(CurrentStrength))), Position.Middle);
+            tip.Add(new ProTipSegment_TextAdjustable(500, text_0), Position.Middle);
+            tip.Add(new ProTipSegment_Text(400, $"Surface area {(int)ShieldHandler.Shape.SurfaceArea()} m2"), Position.Middle);
+            tip.Add(new ProTipSegment_Text(400, $"This shield dome has {(int)currentHealth}/{(int)domeStats.MaxHealth} health"), Position.Middle);
+            tip.Add(new ProTipSegment_Text(400, $"This shield dome has {domeStats.ArmorClass} armor class"), Position.Middle);
+            tip.Add(new ProTipSegment_Text(400, $"This shield dome has a fragility of {domeStats.SurfaceFactor:F2}"), Position.Middle);
+            tip.Add(new ProTipSegment_BarWithTextOnIt(400, text_1, progress));
+            tip.Add(new ProTipSegment_TextAdjustable(500, Hot.TemperatureString + ". " + Hot.DirectionString), Position.Middle);
+            tip.SetSpecial(UniqueTipType.Interaction, new ProTipSegment_TextAdjustableRight(500, "Press <<Q>> to modify shield settings"));
+        }
+
+        public override void Secondary(Transform T)
+        {
+            new UI.AdvShieldUi(this).ActivateGui(GuiActivateType.Stack);
+        }
+
+
+
+        [MainThread("Has an RPC and sets an enable flag- must be called from main thread")]
+        public void SetShieldState(bool b, bool sync)
+        {
+            if (!ShieldDome.SetState(b) || !sync || !Net.IsServer) return;
+
+            GetConstructableOrSubConstructable().iMultiplayerSyncroniser.RPCRequest_SyncroniseBlock(this, b);
+        }
+
+        public float GetExcessDriveAfterFactoring()
+        {
+            return Mathf.Clamp(ShieldData.ExcessDrive * ShieldData.ExternalDriveFactor, 0.0f, 10f);
+        }
+
+        public void ApplyDisruption(float multiplier)
+        {
+            CurrentStrength *= multiplier;
+        }
+
+        protected void RegenerateFromDisruption(float powerUsed, float deltaTime)
+        {
+            CurrentStrength = Mathf.Min(CurrentStrength + AdvShieldProjector.GetDisruptionRegenerationRate(powerUsed) * deltaTime, GetExcessDriveAfterFactoring());
+        }
 
         protected void AfterLoad()
         {
@@ -213,9 +416,10 @@ namespace AdvShields
             ConnectToAllLaserSources();
         }
 
-        public override void PrepForDelete()
+        public void Update(ISectorTimeStep fn)
         {
-            //ShieldClass.CleanUp();
+            ConnectToAllLaserSources();
+            ShieldHandler.Update();
         }
 
         private void SetShieldSizeAndPosition()
@@ -230,162 +434,13 @@ namespace AdvShields
         private void SetVisualDataEvents()
         {
             VisualData.AssembleSpeed.SetChangeAction((newValue, oldValue, type) => _material.SetFloat("_AssembleSpeed", newValue));
-
             VisualData.Edge.SetChangeAction((newValue, oldValue, type) => _material.SetFloat("_Edge", newValue));
             VisualData.Fresnel.SetChangeAction((newValue, oldValue, type) => _material.SetFloat("_Fresnel", newValue));
-
             VisualData.SinWaveFactor.SetChangeAction((newValue, oldValue, type) => _material.SetFloat("_SinWaveFactor", newValue));
             VisualData.SinWaveSpeed.SetChangeAction((newValue, oldValue, type) => _material.SetFloat("_SinWaveSpeed", newValue));
             VisualData.SinWaveSize.SetChangeAction((newValue, oldValue, type) => _material.SetFloat("_SinWaveSize", newValue));
-
             VisualData.BaseColor.SetChangeAction((newValue, oldValue, type) => _material.SetColor("_Color", newValue));
             VisualData.GridColor.SetChangeAction((newValue, oldValue, type) => _material.SetColor("_GridColor", newValue));
-        }
-        //start of deleting comment
-        // public bool Reflect(Angle angleOfIncidence, float piercingRoll)
-        // {
-        //    float magnitude = ProbabilityOfReflection(VelocityMeasurement.Velocity.magnitude, CurrentStrength, angleOfIncidence.FDeg);
-        //     bool flag = piercingRoll < magnitude;
-        //     if (flag)
-        //         ShieldClass.HitByProjectile(magnitude);
-        //     else
-        //         CriticalCalculator.IsCriticalScored(GetTeam(), CriticalType.ShieldReflect);
-        //     return flag;
-        // }
-
-        // public static float ProbabilityOfReflection(
-        //   float shieldSpeed,
-        //   float excessDrive,
-        //   float angleOfIncidence)
-        //{
-        //     float num1 = 0.05f + (float)((double)angleOfIncidence / 90.0 * 0.0500000007450581);
-        //     float num2 = (float)(3.0 * ((double)excessDrive - 1.0) / 9.0);
-        //     float num3 = Math.Max(0.0f, (float)(1.0 - (double)shieldSpeed / 400.0));
-        //     return (float)((double)num1 * (double)num3 * (1.0 + (double)num2));
-        // }
-        //end of deleting comment
-        public override void SetExtraInfo(ExtraInfoArrayReadPackage v)
-        {
-            base.SetExtraInfo(v);
-            v.FindDelimiterAndSpoolToIt(DelimiterType.ShieldProjector, false);
-            int orEndOfArrayIfNot = v.ElementsToDelimiterIfThereIsOneOrEndOfArrayIfNot(DelimiterType.ShieldProjector, false);
-            if (orEndOfArrayIfNot < 7)
-                return;
-            ShieldData.Length.Us = v.GetNextFloat();
-            ShieldData.Height.Us = v.GetNextFloat();
-            ShieldData.Width.Us = v.GetNextFloat();
-            ShieldData.ExcessDrive.Us = v.GetNextFloat();
-            ShieldData.Azimuth.Us = v.GetNextFloat();
-            ShieldData.Elevation.Us = v.GetNextFloat();
-            ShieldData.Type.Us = (enumShieldDomeState)v.GetNextInt();
-            if (orEndOfArrayIfNot >= 11)
-                ShieldData.Color.Us = new Color(v.GetNextFloat(), v.GetNextFloat(), v.GetNextFloat(), v.GetNextFloat());
-        }
-
-        public override void SetParameters1(Vector4 v)
-        {
-            ShieldData.Length.Us = v.x;
-            ShieldData.Height.Us = v.y;
-            ShieldData.Width.Us = v.z;
-            ShieldData.ExcessDrive.Us = v.w;
-        }
-
-        public override void SetParameters2(Vector4 v)
-        {
-            float x = v.x;
-            if (x == 0.0)
-                ShieldData.Type.Us = enumShieldDomeState.Off;
-            else if (x == 1.0)
-                ShieldData.Type.Us = enumShieldDomeState.On;
-            else if ((double)x == 2.0)
-                ShieldData.Type.Us = enumShieldDomeState.On;
-            else if ((double)x == 3.0)
-                ShieldData.Type.Us = enumShieldDomeState.On;
-            ShieldData.Azimuth.Us = v.y;
-            ShieldData.Elevation.Us = v.z;
-        }
-
-        protected override void AppendToolTip(ProTip tip)
-        {
-            base.AppendToolTip(tip);
-            float driveAfterFactoring = GetExcessDriveAfterFactoring();
-            tip.SetSpecial(UniqueTipType.Name, new ProTipSegment_TitleSubTitle("Shield dome", "Projects a defensive shield around itself"));
-            tip.Add(new ProTipSegment_TextAdjustable(500, string.Format("Total drive {0} (basic drive {1} and an external factor of {2})", driveAfterFactoring, ShieldData.ExcessDrive, ShieldData.ExternalDriveFactor)), Position.Middle);
-            if (CurrentStrength < (double)driveAfterFactoring)
-                tip.Add(new ProTipSegment_TextAdjustable(500, string.Format("Charging, effective drive: {0}", Rounding.R2(CurrentStrength))), Position.Middle);
-
-            switch (ShieldData.Type.Us)
-            {
-                case enumShieldDomeState.Off:
-                    tip.Add(new ProTipSegment_TextAdjustable(500, "This shield turned off and is therefore inactive"), Position.Middle);
-                    break;
-                case enumShieldDomeState.On:
-                    tip.Add(new ProTipSegment_TextAdjustable(500, "This shield is turned on"), Position.Middle);
-                    break;
-            }
-
-            var domeStats = ShieldHandler.GetDomeStats();
-            var currentHealth = domeStats.GetCurrentHealth(ShieldHandler.CurrentDamageSustained);
-            tip.Add(new ProTipSegment_Text(400, $"Surface area {(int)ShieldHandler.Shape.SurfaceArea()} m2"), Position.Middle);
-            tip.Add(new ProTipSegment_Text(400, $"This shield dome has {(int)currentHealth}/{(int)domeStats.MaxHealth} health"), Position.Middle);
-            tip.Add(new ProTipSegment_Text(400, $"This shield dome has {domeStats.ArmorClass} armor class"), Position.Middle);
-            tip.Add(new ProTipSegment_Text(400, $"This shield dome has a fragility of {domeStats.SurfaceFactor:F2}"), Position.Middle);
-
-            var text = "Shield is fully charged";
-            float progress = 1.0f;
-
-            if (ShieldHandler.CurrentDamageSustained > 0.0f)
-            {
-                var secondsSinceLastHit = (UnityEngine.Time.time - ShieldHandler.TimeSinceLastHit);
-                var timeRemaining = AdvShieldHandler.WaitTime - secondsSinceLastHit;
-
-                if (timeRemaining <= 0.0f)
-                {
-                    text = $"Shield is recharging, {currentHealth / domeStats.MaxHealth * 100:F1} % complete.";
-                }
-                else
-                {
-                    text = $"Time until recharge: {timeRemaining:F1}s";
-                    progress = Mathf.Clamp01(Mathf.SmoothStep(0, 1, secondsSinceLastHit / AdvShieldHandler.WaitTime));
-                }
-            }
-
-            tip.Add(new ProTipSegment_BarWithTextOnIt(400, text, progress));
-
-            tip.Add(new ProTipSegment_TextAdjustable(500, Hot.TemperatureString + ". " + Hot.DirectionString), Position.Middle);
-            tip.SetSpecial(UniqueTipType.Interaction, (IProTipSegment)new ProTipSegment_TextAdjustableRight(500, "Press <<Q>> to modify shield settings"));
-        }
-
-        public override void Secondary(Transform T)
-        {
-            new UI.AdvShieldUi(this).ActivateGui(GuiActivateType.Stack);
-        }
-
-        public float GetExcessDriveAfterFactoring()
-        {
-            return Mathf.Clamp((float)ShieldData.ExcessDrive * (float)ShieldData.ExternalDriveFactor, 0.0f, 10f);
-        }
-
-        public override void SyncroniseUpdate(bool b1)
-        {
-            SetShieldState(b1, false);
-        }
-
-        [MainThread("Has an RPC and sets an enable flag- must be called from main thread")]
-        public void SetShieldState(bool b, bool sync)
-        {
-            if (!ShieldDome.SetState(b) || !sync || !Net.IsServer)
-                return;
-
-            GetConstructableOrSubConstructable().iMultiplayerSyncroniser.RPCRequest_SyncroniseBlock(this, b);
-        }
-
-        public bool IsActive
-        {
-            get
-            {
-                return ShieldData.Type != enumShieldDomeState.Off;
-            }
         }
 
         public void Allow(IPowerRequestRecurring request)
@@ -429,12 +484,10 @@ namespace AdvShields
             }
         }
 
-
         public void PlayShieldHit(Vector3 location)
         {
             AudioClipDefinition byCollectionName = Configured.i.AudioCollections.GetRandomClipByCollectionName("Shield Hit");
-            if (byCollectionName == null)
-                return;
+            if (byCollectionName == null) return;
             Pooler.GetPool<AdvSoundManager>().PlaySound(new SoundRequest((IAudioClip)byCollectionName, location)
             {
                 Priority = SoundPriority.ShouldHear,
@@ -444,120 +497,19 @@ namespace AdvShields
             });
         }
 
-        public override void CheckStatus(IStatusUpdate updater)
-        {
-            base.CheckStatus(updater);
-            if (ShieldData.Width * ShieldData.Height < 1.00999999046326)
-                updater.FlagWarning(this, "Should be larger than 1x1");
-            if (!DoesConstructHaveOtherShields)
-                return;
-            updater.FlagError(this, "Shield domes don't work if there are shield rings or shield projectors on the vehicle");
-        }
 
-        public bool DoesConstructHaveOtherShields
-        {
-            get
-            {
-                return MainConstruct.NodeSetsRestricted.RingShieldNodes.NodeCount > 0 || MainConstruct.iBlockTypeStorage.ShieldProjectorStore.Count > 0;
-            }
-        }
-
-        public void Update(ISectorTimeStep fn)
-        {
-            ConnectToAllLaserSources();
-            ShieldHandler.Update();
-        }
-
-        public override void StateChanged(IBlockStateChange change)
-        {
-            base.StateChanged(change);
-            if (change.IsAvailableToConstruct)
-            {
-                //  Objects.Instance.Shields.Add(this)
-                TypeStorage.AddObject(this);
-                //  MainConstruct.iBlockTypeStorage.ShieldProjectorStore.Add(this); 
-                MainConstruct.PowerUsageCreationAndFuelRestricted.AddRecurringPowerUser(PowerUse);
-                MainConstruct.HotObjectsRestricted.AddHotObject(Hot);
-                MainConstruct.ShieldsChanged();
-                //MainConstruct.SchedulerRestricted.RegisterForLateUpdate(new Action(ShieldClass.UpdateColorBasedOnHit));
-                MainConstruct.SchedulerRestricted.RegisterFor1PerSecond(new Action<ISectorTimeStep>(Update));
-            }
-            // else if (!change.IsPerminentlyRemovedfromDesign && !change.IsPerminentlyRemovedOrConstructDestroyed)
-            //   ;
-            if (!change.IsLostToConstructOrConstructLost)
-                return;
-
-            TypeStorage.RemoveObject(this);
-            //Objects.Instance.Shields.Remove(base);
-            //MainConstruct.iBlockTypeStorage.ShieldProjectorStore.Remove(this);
-            MainConstruct.PowerUsageCreationAndFuelRestricted.RemoveRecurringPowerUser(PowerUse);
-            MainConstruct.HotObjectsRestricted.RemoveHotObject((IHotObject)Hot);
-            MainConstruct.ShieldsChanged();
-            //MainConstruct.SchedulerRestricted.UnregisterForLateUpdate(new Action(ShieldClass.UpdateColorBasedOnHit));
-            MainConstruct.SchedulerRestricted.UnregisterFor1PerSecond(new Action<ISectorTimeStep>(Update));
-        }
-
-        public float CurrentStrength { get; private set; }
-        //public object ShieldClass { get; set; }
-        // ^added comment
-        public override BlockTechInfo GetTechInfo()
-        {
-            return new BlockTechInfo().AddStatement("Shields have a reduction in reflect effectiveness when moving at high speeds").AddStatement("Shield Domes cannot run when Shield Rings or Shield Projectors are present on your vehicle");
-        }
-
-        public void ApplyDisruption(float multiplier)
-        {
-            CurrentStrength *= multiplier;
-        }
-
-        protected void RegenerateFromDisruption(float powerUsed, float deltaTime)
-        {
-            CurrentStrength = Mathf.Min(CurrentStrength + AdvShieldProjector.GetDisruptionRegenerationRate(powerUsed) * deltaTime, GetExcessDriveAfterFactoring());
-        }
-
-        public static float GetDisruptionRegenerationRate(float powerUse)
-        {
-            return Mathf.Pow(powerUse, 0.5f) * 0.04f;
-        }
-
-        public class ActivateCallback : CallbackWithObjects<AdvShieldProjector, bool, bool>
-        {
-            public ActivateCallback(AdvShieldProjector obj)
-              : base(obj)
-            {
-            }
-
-            protected override void ApplyTo(AdvShieldProjector obj, bool toApply, bool sync)
-            {
-                obj.SetShieldState(toApply, sync);
-            }
-        }
-
-        // Laser Stuff
-        public override void ItemSet()
-        {
-            base.ItemSet();
-            if (Configured.i == null)
-                return;
-            bool found;
-            ItemGroupDefinition itemGroupDefinition = Configured.i.ItemGroups.Find(new Guid("5166eac9-7c5c-4f6e-a96f-4604d7efbf23"), out found);
-            if (!found)
-                Debug.Log("Could not find the laser component ID");
-            else
-                _laserSetComponentId = itemGroupDefinition.ComponentId.RuntimeId;
-        }
 
         public void ConnectToAllLaserSources()
         {
-            if (_laserSetComponentId == -1)
-                return;
+            if (_laserSetComponentId == -1) return;
 
             //Debug.Log("Advanced Shields: Connecting to lasers");
             for (int i = 0; i < LaserComponentPositions.Length; i++)
             {
                 if (LaserComponentPromisedTo[i] == null || !LaserComponentPromisedTo[i].IsAlive)
+                {
                     LaserComponentPromisedTo[i] = ConnectToALaserSource(LaserComponentPositions[i]);
-
+                }
             }
         }
 
@@ -605,5 +557,18 @@ namespace AdvShields
             }
         }
 
+
+
+        public class ActivateCallback : CallbackWithObjects<AdvShieldProjector, bool, bool>
+        {
+            public ActivateCallback(AdvShieldProjector obj) : base(obj)
+            {
+            }
+
+            protected override void ApplyTo(AdvShieldProjector obj, bool toApply, bool sync)
+            {
+                obj.SetShieldState(toApply, sync);
+            }
+        }
     }
 }
