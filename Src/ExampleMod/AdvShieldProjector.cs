@@ -81,9 +81,6 @@ namespace AdvShields
 {
     public class AdvShieldProjector : BlockWithControl
     {
-
-        private static bool _hasLoaded = false;
-
         // Original
         public ShieldDomeBehaviour ShieldDome;
         public ICarriedObjectReference CarriedObject;
@@ -153,39 +150,12 @@ namespace AdvShields
             Debug.Log("Advanced Shields: Block Start start");
             base.BlockStart();
 
-            if (!_hasLoaded)
-            {
-                _hasLoaded = true;
-
-                var bundle = AssetBundle.LoadFromMemory(Properties.Resources.shielddome);
-                var objShield = bundle.LoadAsset<GameObject>("assets/external/BasicShield.prefab");
-                var objEffect = bundle.LoadAsset<GameObject>("assets/external/BasicShieldHitEffect.prefab");
-                //var obj = bundle.LoadAsset<GameObject>("assets/external/shieldobject.prefab");
-
-                //Configured.i.Meshes.TryGetValue("ShieldDomeFaceOrder", out var meshFaces);
-                //Configured.i.Meshes.TryGetValue("ShieldDomeGrid", out var meshGrid);
-
-                //var mesh = meshFaces.SafeMesh.GetMesh();
-                //mesh.SetUVs(3, meshGrid.SafeMesh.GetMesh().uv.ToList());
-
-                //obj.GetComponent<MeshFilter>().sharedMesh = mesh;
-
-                objShield.AddComponent<ShieldDomeBehaviour>();
-                StaticStorage.ShieldDomeObject = objShield;
-
-                //objEffect.SetActive(false);
-                objEffect.AddComponent<HitEffectBehaviour>();
-                StaticStorage.HitEffectObject = objEffect;
-            }
-            base.BlockStart();
             GameObject gameObject = GameObject.Instantiate<GameObject>(StaticStorage.ShieldDomeObject);
             gameObject.transform.position = GameWorldPosition;
             gameObject.transform.rotation = GameWorldRotation;
-
             gameObject.transform.localPosition = Transforms.LocalToGlobal(Vector3.zero, GameWorldPosition, GameWorldRotation);
             gameObject.transform.localRotation = Transforms.LocalRotationToGlobalRotation(Quaternion.identity, GameWorldRotation);
 
-            base.BlockStart();
             CarriedObject = CarryThisWithUs(gameObject, LevelOfDetail.Low);
             ShieldDome = gameObject.GetComponent<ShieldDomeBehaviour>();
             ShieldHandler = new AdvShieldHandler(this);
