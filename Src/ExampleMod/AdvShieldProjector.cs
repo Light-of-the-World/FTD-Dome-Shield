@@ -91,9 +91,45 @@ namespace AdvShields
             return Mathf.Pow(powerUse, 0.5f) * 0.04f;
         }
 
+        private static LaserNode LaserComponentSearch(Block block)
+        {
+            Vector3i p = block.LocalPosition;
+            Vector3i fv = block.LocalForward;
+            Vector3i rv = block.LocalRight;
+            Vector3i uv = block.LocalUp;
+
+            Vector3i[] verificationPos = new Vector3i[6]
+            {
+                p + 2 * fv,
+                p - 2 * fv,
+                p + 2 * rv,
+                p - 2 * rv,
+                p + 2 * uv,
+                p - 2 * uv
+            };
+
+            LaserNode ln = null;
+
+            foreach (Vector3i vp in verificationPos)
+            {
+                Block b = block.GetConstructableOrSubConstructable().AllBasicsRestricted.GetAliveBlockViaLocalPosition(vp);
+
+                if (b is LaserComponent)
+                {
+                    if (b is LaserMultipurpose || b is LaserConnector || b is LaserTransceiver)
+                    {
+                        LaserComponent lc = b as LaserComponent;
+                        ln = lc.Node;
+                        break;
+                    }
+                }
+            }
+
+            return ln;
+        }
 
 
-        // Original
+
         private ICarriedObjectReference CarriedObject;
 
         private VelocityMeasurement VelocityMeasurement;
@@ -101,6 +137,8 @@ namespace AdvShields
         private BlockModule_Hot Hot;
 
         private float reliabilityTimeCheck;
+
+        private float CurrentStrength;
 
         private ActivateCallback _activateCallback;
 
@@ -112,25 +150,10 @@ namespace AdvShields
         public AdvShieldData ShieldData { get; set; } = new AdvShieldData(0U);
         public AdvShieldVisualData VisualData { get; set; } = new AdvShieldVisualData(1);
 
-
-        // Laser Properties
-        private int _laserSetComponentId = -1;
-
-        private LaserNode[] _laserNodes = new LaserNode[6];
-
-        public Vector3i[] LaserComponentPositions { get; protected set; }
-
-        public IHasLaser[] LaserComponentPromisedTo { get; protected set; }
-
-        public LaserDamageHelper _damageHelper { get; protected set; }
-
-
-
         public VarIntClamp Priority { get; set; } = new VarIntClamp(0, -50, 50, NoLimitMode.None);
-
         public PowerUserData PriorityData { get; set; } = new PowerUserData(34852U);
 
-        public float CurrentStrength { get; private set; }
+        public LaserNode ConnectLaserNode { get; set; }
 
         public bool IsActive
         {
@@ -149,24 +172,6 @@ namespace AdvShields
         }
 
 
-
-        public override void ItemSet()
-        {
-            base.ItemSet();
-
-            if (Configured.i == null) return;
-
-            ItemGroupDefinition itemGroupDefinition = Configured.i.ItemGroups.Find(new Guid("5166eac9-7c5c-4f6e-a96f-4604d7efbf23"), out bool found);
-
-            if (!found)
-            {
-                Debug.Log("Could not find the laser component ID");
-            }
-            else
-            {
-                _laserSetComponentId = itemGroupDefinition.ComponentId.RuntimeId;
-            }
-        }
 
         public override void BlockStart()
         {
@@ -207,28 +212,9 @@ namespace AdvShields
             Hot.TotalTemperatureWeighting = 0.2f;
             Hot.SetWeightings(LocalForward);
 
-            ShieldData.SetChangeAction(SetShieldSizeAndPosition);
-
-
-
             _activateCallback = new ActivateCallback(this);
 
-            // Laser stuff
-            var p = LocalPosition;
-            var fw = LocalForward;
-            var r = LocalRight;
-            var up = LocalUp;
-
-            LaserComponentPromisedTo = new IHasLaser[6];
-            LaserComponentPositions = new Vector3i[6]
-            {
-                p + 2 * fw,
-                p - 2 * fw,
-                p + 2 * r,
-                p - 2 * r,
-                p + 2 * up,
-                p - 2 * up
-            };
+            ShieldData.SetChangeAction(SetShieldSizeAndPosition);
 
             Debug.Log("Advanced Shields: Block Start end");
         }
@@ -276,7 +262,8 @@ namespace AdvShields
                 updater.FlagError(this, "Shield domes don't work if there are shield rings or shield projectors on the vehicle");
             }
 
-            ConnectToAllLaserSources();
+            //ConnectToAllLaserSources();
+            ConnectLaserNode = LaserComponentSearch(this);
             ShieldHandler.Update();
         }
 
@@ -374,7 +361,7 @@ namespace AdvShields
 
 
         [MainThread("Has an RPC and sets an enable flag- must be called from main thread")]
-        public void SetShieldState(bool b, bool sync)
+        private void SetShieldState(bool b, bool sync)
         {
             if (!ShieldDome.SetState(b) || !sync || !Net.IsServer) return;
 
@@ -386,7 +373,7 @@ namespace AdvShields
             return Mathf.Clamp(ShieldData.ExcessDrive * ShieldData.ExternalDriveFactor, 0.0f, 10f);
         }
 
-        protected void RegenerateFromDisruption(float powerUsed, float deltaTime)
+        private void RegenerateFromDisruption(float powerUsed, float deltaTime)
         {
             CurrentStrength = Mathf.Min(CurrentStrength + GetDisruptionRegenerationRate(powerUsed) * deltaTime, GetExcessDriveAfterFactoring());
         }
@@ -413,6 +400,60 @@ namespace AdvShields
             VisualData.GridColor.SetChangeAction((newValue, oldValue, type) => _material.SetColor("_GridColor", newValue));
         }
 
+        private void Allow(IPowerRequestRecurring request)
+        {
+            VelocityMeasurement.Measure();
+            float driveAfterFactoring = GetExcessDriveAfterFactoring();
+            RegenerateFromDisruption(request.PowerUsed, request.DeltaTime);
+
+            if (IsOnSubConstructable)
+            {
+                Hot.SetWeightings(LocalForwardInMainConstruct);
+            }
+
+            int num = (IsActive && !DoesConstructHaveOtherShields) ? 1 : 0;
+            request.InitialRequestLevel = num;
+
+            if (request.InitialRequestLevel == 1f)
+            {
+                Hot.TemperatureIncreaseUnderFullUsagePerSecond = (float)(ShieldData.Width * (double)ShieldData.Height * driveAfterFactoring * 0.100000001490116);
+                Hot.AddUsage(PowerUse.FractionOfPowerRequestedThatWasProvided);
+                ShieldSound.me.NoiseHere(GameWorldPosition, driveAfterFactoring, 1f);
+
+                if (Net.NetworkType == NetworkType.Client || (double)GameTimer.Instance.TimeCache <= reliabilityTimeCheck)
+                {
+                    return;
+                }
+
+                reliabilityTimeCheck = GameTimer.Instance.TimeCache + Aux.RandomRange(0.1f, 1f);
+
+                bool flag_0 = Aux.Rnd.NextFloat(0.0f, 1f) > PowerUse.FractionOfPowerRequestedThatWasProvided;
+                _activateCallback.Enqueue(!flag_0, true);
+            }
+            else if (Net.NetworkType != NetworkType.Client)
+            {
+                _activateCallback.Enqueue(false, true);
+            }
+        }
+
+        private void IdealUse(IPowerRequestRecurring request)
+        {
+            if (DoesConstructHaveOtherShields)
+            {
+                request.IdealPower = 0.0f;
+            }
+
+            else if (ShieldData.Type == enumShieldDomeState.Off)
+            {
+                request.IdealPower = 0f;
+            }
+            else
+            {
+                float driveAfterFactoring = GetExcessDriveAfterFactoring();
+                request.IdealPower = (float)(ShieldData.Length * ShieldData.Width * ShieldData.Height * 0.00499999988824129) * 0.01f;
+            }
+        }
+
         public void PlayShieldHit(Vector3 location)
         {
             AudioClipDefinition byCollectionName = Configured.i.AudioCollections.GetRandomClipByCollectionName("Shield Hit");
@@ -425,107 +466,6 @@ namespace AdvShields
                 MinDistance = 0.5f,
                 Volume = 0.6f
             });
-        }
-
-        public void Allow(IPowerRequestRecurring request)
-        {
-            VelocityMeasurement.Measure();
-            float driveAfterFactoring = GetExcessDriveAfterFactoring();
-            RegenerateFromDisruption(request.PowerUsed, request.DeltaTime);
-            if (IsOnSubConstructable)
-                Hot.SetWeightings(LocalForwardInMainConstruct);
-            int num = !IsActive ? 0 : (!DoesConstructHaveOtherShields ? 1 : 0);
-            request.InitialRequestLevel = num == 0 ? 0.0f : 1f;
-            if (request.InitialRequestLevel == 1.0)
-            {
-                Hot.TemperatureIncreaseUnderFullUsagePerSecond = (float)(ShieldData.Width * (double)ShieldData.Height * driveAfterFactoring * 0.100000001490116);
-                Hot.AddUsage(PowerUse.FractionOfPowerRequestedThatWasProvided);
-                ShieldSound.me.NoiseHere(GameWorldPosition, driveAfterFactoring, 1f);
-                if (Net.NetworkType == NetworkType.Client || (double)GameTimer.Instance.TimeCache <= reliabilityTimeCheck)
-                    return;
-                reliabilityTimeCheck = GameTimer.Instance.TimeCache + Aux.RandomRange(0.1f, 1f);
-                if (Aux.Rnd.NextFloat(0.0f, 1f) > PowerUse.FractionOfPowerRequestedThatWasProvided)
-                    _activateCallback.Enqueue(false, true);
-                else
-                    _activateCallback.Enqueue(true, true);
-            }
-            else if (Net.NetworkType != NetworkType.Client)
-                _activateCallback.Enqueue(false, true);
-        }
-
-        public void IdealUse(IPowerRequestRecurring request)
-        {
-            if (DoesConstructHaveOtherShields)
-                request.IdealPower = 0.0f;
-            else if (ShieldData.Type == enumShieldDomeState.Off)
-            {
-                request.IdealPower = 0.0f;
-            }
-            else
-            {
-                float driveAfterFactoring = GetExcessDriveAfterFactoring();
-                request.IdealPower = (float)(ShieldData.Length * ShieldData.Width * ShieldData.Height * 0.00499999988824129) * 0.01f;
-            }
-        }
-
-
-
-        public void ConnectToAllLaserSources()
-        {
-            if (_laserSetComponentId == -1) return;
-
-            //Debug.Log("Advanced Shields: Connecting to lasers");
-            for (int i = 0; i < LaserComponentPositions.Length; i++)
-            {
-                if (LaserComponentPromisedTo[i] == null || !LaserComponentPromisedTo[i].IsAlive)
-                {
-                    LaserComponentPromisedTo[i] = ConnectToALaserSource(LaserComponentPositions[i]);
-                }
-            }
-        }
-
-        public IHasLaser ConnectToALaserSource(Vector3i connectPosition)
-        {
-            //Debug.Log($"Advanced Shields: Connecting to laser at point {connectPosition}");
-            IHasLaser laserPromisedTo = null;
-
-            IAllConstructBlock subConstructable = GetConstructableOrSubConstructable();
-            Block viaLocalPosition1 = subConstructable.AllBasicsRestricted.GetAliveBlockInItemGroupViaLocalPosition(connectPosition, _laserSetComponentId);
-
-            if (viaLocalPosition1 != null)
-            {
-                LaserComponent laserComponent = viaLocalPosition1 as LaserComponent;
-                if (laserComponent != null && laserComponent.Node != null)
-                    laserPromisedTo = laserComponent;
-                LaserMultipurpose laserMultipurpose = viaLocalPosition1 as LaserMultipurpose;
-                if (laserMultipurpose != null)
-                    laserPromisedTo = laserMultipurpose;
-            }
-
-            if (laserPromisedTo?.Node == null)
-                return null;
-
-            laserPromisedTo.Node.IsOffensive = true;
-
-            return laserPromisedTo;
-        }
-
-        public IEnumerable<LaserNode> LaserPromisedTo()
-        {
-            if (LaserComponentPromisedTo == null)
-            {
-                for (int i = 0; i < 6; i++)
-                {
-                    yield return null;
-                }
-            }
-            else
-            {
-                for (int i = 0; i < 6; i++)
-                {
-                    yield return LaserComponentPromisedTo[i]?.Node;
-                }
-            }
         }
 
 

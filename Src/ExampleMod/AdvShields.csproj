@@ -315,7 +315,6 @@
     <Compile Include="Behaviours\HitEffectBehaviour.cs" />
     <Compile Include="Elipse.cs" />
     <Compile Include="ExampleModPlugin.cs" />
-    <Compile Include="LaserComponentConnection.cs" />
     <Compile Include="Models\AdvShieldVisualData.cs" />
     <Compile Include="Models\enumShieldDomeState.cs" />
     <Compile Include="Models\ShaderColorProperty.cs" />
