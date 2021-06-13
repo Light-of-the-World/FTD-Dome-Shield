@@ -133,6 +133,7 @@ namespace AdvShields
                 hit.Setup(hitPointLocal, allConstructBlock.GameObject, range, HitSource.Block, results.Direction);
                 hit.DamageableObject = item.ShieldHandler;
 
+                item.PlayShieldHit(results.Position);
                 results.AddAndSort(hit);
             }
         }

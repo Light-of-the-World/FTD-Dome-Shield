@@ -96,8 +96,6 @@ namespace AdvShields
         // Original
         private ICarriedObjectReference CarriedObject;
 
-        private readonly Rect m_ColoringShieldWindowRect = new Rect(850f, 530f, 425f, 265f);
-
         private VelocityMeasurement VelocityMeasurement;
 
         private BlockModule_Hot Hot;
@@ -110,9 +108,9 @@ namespace AdvShields
 
         public IPowerRequestRecurring PowerUse { get; set; }
         public ShieldDomeBehaviour ShieldDome { get; set; }
-        public AdvShieldData ShieldData { get; set; } = new AdvShieldData(0U);
         public AdvShieldHandler ShieldHandler { get; set; }
-        public AdvShieldVisualData VisualData { get; set; }
+        public AdvShieldData ShieldData { get; set; } = new AdvShieldData(0U);
+        public AdvShieldVisualData VisualData { get; set; } = new AdvShieldVisualData(1);
 
 
         // Laser Properties
@@ -152,7 +150,6 @@ namespace AdvShields
 
 
 
-
         public override void ItemSet()
         {
             base.ItemSet();
@@ -182,36 +179,37 @@ namespace AdvShields
             gameObject.transform.localPosition = Transforms.LocalToGlobal(Vector3.zero, GameWorldPosition, GameWorldRotation);
             gameObject.transform.localRotation = Transforms.LocalRotationToGlobalRotation(Quaternion.identity, GameWorldRotation);
 
-            ShieldDome = gameObject.GetComponent<ShieldDomeBehaviour>();
-            _material = gameObject.GetComponent<MeshRenderer>().material;
-
             CarriedObject = CarryThisWithUs(gameObject, LevelOfDetail.Low);
+
+            _material = gameObject.GetComponent<MeshRenderer>().material;
+            ShieldDome = gameObject.GetComponent<ShieldDomeBehaviour>();
+            ShieldDome.Initialize(_material);
+
+            SetVisualDataEvents();
 
             ShieldHandler = new AdvShieldHandler(this);
             //Added Get and Set priority
             //SetShieldSizeAndPosition();
             //PoweredDecoy CurrentPower = base.TargetPower.PowerUse.Us;
+
             PowerUse = new PowerRequestRecurring(this, PowerRequestType.Shield, PriorityData.Get, PriorityData.Set)
             {
                 fnSetRequestLevel = Allow,
                 fnCalculateIdealPowerUse = IdealUse,
             };
+
             // yay
             VelocityMeasurement = new VelocityMeasurement(new UniversePositionReturnBlockInMainFrame(this, PositionReturnBlockValidRequirement.Alive));
-            BlockModule_Hot blockModuleHot = new BlockModule_Hot(this);
-            blockModuleHot.TemperatureIncreaseUnderFullUsagePerSecond = 0.0f;
-            blockModuleHot.CoolingFractionPerSecond = 0.15f;
-            blockModuleHot.TotalTemperatureWeighting = 0.2f;
-            Hot = blockModuleHot;
+
+            Hot = new BlockModule_Hot(this);
+            Hot.TemperatureIncreaseUnderFullUsagePerSecond = 0.0f;
+            Hot.CoolingFractionPerSecond = 0.15f;
+            Hot.TotalTemperatureWeighting = 0.2f;
             Hot.SetWeightings(LocalForward);
 
-            ShieldData.SetChangeAction(SetShieldSizeAndPosition, false);
+            ShieldData.SetChangeAction(SetShieldSizeAndPosition);
 
 
-            VisualData = new AdvShieldVisualData(1);
-            SetVisualDataEvents();
-
-            ShieldDome.Initialize(_material);
 
             _activateCallback = new ActivateCallback(this);
 
@@ -235,26 +233,6 @@ namespace AdvShields
             Debug.Log("Advanced Shields: Block Start end");
         }
 
-        /*
-        public override void SetExtraInfo(ExtraInfoArrayReadPackage v)
-        {
-            base.SetExtraInfo(v);
-
-            v.FindDelimiterAndSpoolToIt(DelimiterType.ShieldProjector, false);
-            int orEndOfArrayIfNot = v.ElementsToDelimiterIfThereIsOneOrEndOfArrayIfNot(DelimiterType.ShieldProjector, false);
-            if (orEndOfArrayIfNot < 7) return;
-            ShieldData.Length.Us = v.GetNextFloat();
-            ShieldData.Height.Us = v.GetNextFloat();
-            ShieldData.Width.Us = v.GetNextFloat();
-            ShieldData.ExcessDrive.Us = v.GetNextFloat();
-            ShieldData.Azimuth.Us = v.GetNextFloat();
-            ShieldData.Elevation.Us = v.GetNextFloat();
-            ShieldData.Type.Us = (enumShieldDomeState)v.GetNextInt();
-            if (orEndOfArrayIfNot < 11) return;
-            ShieldData.Color.Us = new Color(v.GetNextFloat(), v.GetNextFloat(), v.GetNextFloat(), v.GetNextFloat());
-        }
-        */
-
 
 
         public override void StateChanged(IBlockStateChange change)
@@ -269,8 +247,7 @@ namespace AdvShields
                 MainConstruct.PowerUsageCreationAndFuelRestricted.AddRecurringPowerUser(PowerUse);
                 MainConstruct.HotObjectsRestricted.AddHotObject(Hot);
                 MainConstruct.ShieldsChanged();
-                //MainConstruct.SchedulerRestricted.RegisterForLateUpdate(new Action(ShieldClass.UpdateColorBasedOnHit));
-                MainConstruct.SchedulerRestricted.RegisterFor1PerSecond(new Action<ISectorTimeStep>(Update));
+                //MainConstruct.SchedulerRestricted.RegisterFor1PerSecond(new Action<ISectorTimeStep>(Update));
             }
 
             if (change.IsLostToConstructOrConstructLost)
@@ -279,21 +256,28 @@ namespace AdvShields
                 //Objects.Instance.Shields.Remove(base);
                 //MainConstruct.iBlockTypeStorage.ShieldProjectorStore.Remove(this);
                 MainConstruct.PowerUsageCreationAndFuelRestricted.RemoveRecurringPowerUser(PowerUse);
-                MainConstruct.HotObjectsRestricted.RemoveHotObject((IHotObject)Hot);
+                MainConstruct.HotObjectsRestricted.RemoveHotObject(Hot);
                 MainConstruct.ShieldsChanged();
-                //MainConstruct.SchedulerRestricted.UnregisterForLateUpdate(new Action(ShieldClass.UpdateColorBasedOnHit));
-                MainConstruct.SchedulerRestricted.UnregisterFor1PerSecond(new Action<ISectorTimeStep>(Update));
+                //MainConstruct.SchedulerRestricted.UnregisterFor1PerSecond(new Action<ISectorTimeStep>(Update));
             }
         }
 
         public override void CheckStatus(IStatusUpdate updater)
         {
             base.CheckStatus(updater);
+
             if (ShieldData.Width * ShieldData.Height < 1.00999999046326)
+            {
                 updater.FlagWarning(this, "Should be larger than 1x1");
-            if (!DoesConstructHaveOtherShields)
-                return;
-            updater.FlagError(this, "Shield domes don't work if there are shield rings or shield projectors on the vehicle");
+            }
+
+            if (DoesConstructHaveOtherShields)
+            {
+                updater.FlagError(this, "Shield domes don't work if there are shield rings or shield projectors on the vehicle");
+            }
+
+            ConnectToAllLaserSources();
+            ShieldHandler.Update();
         }
 
         public override void PrepForDelete()
@@ -402,35 +386,18 @@ namespace AdvShields
             return Mathf.Clamp(ShieldData.ExcessDrive * ShieldData.ExternalDriveFactor, 0.0f, 10f);
         }
 
-        public void ApplyDisruption(float multiplier)
-        {
-            CurrentStrength *= multiplier;
-        }
-
         protected void RegenerateFromDisruption(float powerUsed, float deltaTime)
         {
-            CurrentStrength = Mathf.Min(CurrentStrength + AdvShieldProjector.GetDisruptionRegenerationRate(powerUsed) * deltaTime, GetExcessDriveAfterFactoring());
-        }
-
-        protected void AfterLoad()
-        {
-            base.AfterLoad();
-            ConnectToAllLaserSources();
-        }
-
-        public void Update(ISectorTimeStep fn)
-        {
-            ConnectToAllLaserSources();
-            ShieldHandler.Update();
+            CurrentStrength = Mathf.Min(CurrentStrength + GetDisruptionRegenerationRate(powerUsed) * deltaTime, GetExcessDriveAfterFactoring());
         }
 
         private void SetShieldSizeAndPosition()
         {
             //ShieldClass.SetPositionSizeRotation(new Vector3(0.0f, 0.0f, 0), new Vector3(ShieldData.Width, ShieldData.Height, ShieldData.Length), Quaternion.Euler(ShieldData.Elevation, ShieldData.Azimuth, 0.0f));
             //ShieldClass.SetColor(ShieldData.Color);
-            ShieldDome.UpdateSizeInfo(ShieldData);
             //VisualData.BaseColor.Us = ShieldData.BaseColor;
             //VisualData.GridColor.Us = ShieldData.GridColor;
+            ShieldDome.UpdateSizeInfo(ShieldData);
             MainConstruct.ShieldsChanged();
         }
 
@@ -444,6 +411,20 @@ namespace AdvShields
             VisualData.SinWaveSize.SetChangeAction((newValue, oldValue, type) => _material.SetFloat("_SinWaveSize", newValue));
             VisualData.BaseColor.SetChangeAction((newValue, oldValue, type) => _material.SetColor("_Color", newValue));
             VisualData.GridColor.SetChangeAction((newValue, oldValue, type) => _material.SetColor("_GridColor", newValue));
+        }
+
+        public void PlayShieldHit(Vector3 location)
+        {
+            AudioClipDefinition byCollectionName = Configured.i.AudioCollections.GetRandomClipByCollectionName("Shield Hit");
+            if (byCollectionName == null) return;
+
+            Pooler.GetPool<AdvSoundManager>().PlaySound(new SoundRequest(byCollectionName, location)
+            {
+                Priority = SoundPriority.ShouldHear,
+                Pitch = Aux.Rnd.NextFloat(0.9f, 1.1f),
+                MinDistance = 0.5f,
+                Volume = 0.6f
+            });
         }
 
         public void Allow(IPowerRequestRecurring request)
@@ -485,19 +466,6 @@ namespace AdvShields
                 float driveAfterFactoring = GetExcessDriveAfterFactoring();
                 request.IdealPower = (float)(ShieldData.Length * ShieldData.Width * ShieldData.Height * 0.00499999988824129) * 0.01f;
             }
-        }
-
-        public void PlayShieldHit(Vector3 location)
-        {
-            AudioClipDefinition byCollectionName = Configured.i.AudioCollections.GetRandomClipByCollectionName("Shield Hit");
-            if (byCollectionName == null) return;
-            Pooler.GetPool<AdvSoundManager>().PlaySound(new SoundRequest((IAudioClip)byCollectionName, location)
-            {
-                Priority = SoundPriority.ShouldHear,
-                Pitch = Aux.Rnd.NextFloat(0.9f, 1.1f),
-                MinDistance = 0.5f,
-                Volume = 0.6f
-            });
         }
 
 
