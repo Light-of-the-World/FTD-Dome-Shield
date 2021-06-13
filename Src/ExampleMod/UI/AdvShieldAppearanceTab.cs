@@ -56,7 +56,7 @@ namespace AdvShields.UI
 
             new ColorBuilder(CreateStandardSegment(InsertPosition.OnCursor)).RgbAdjust(data.BaseColor, true);
             ScreenSegmentStandardHorizontal standardHorizontal = CreateStandardHorizontalSegment();
-            var baseColorPreview = new SubjectiveColorDisplay<AdvShieldData>(_focus.ShieldData, M.m<AdvShieldData>("Base Color"), M.m<AdvShieldData>(new ToolTip("The color of the shield", 200f)), M.m<AdvShieldData>(I => (Color)(Var<Color>)I.Color))
+            var baseColorPreview = new SubjectiveColorDisplay<AdvShieldData>(_focus.ShieldData, M.m<AdvShieldData>("Base Color"), M.m<AdvShieldData>(new ToolTip("The color of the shield", 200f)), M.m<AdvShieldData>(I => (Color)(Var<Color>)I.BaseColor))
             {
                 PrescribedHeight = new PixelSizing(60f, Dimension.Height)
             };
@@ -66,7 +66,7 @@ namespace AdvShields.UI
 
             new ColorBuilder(CreateStandardSegment(InsertPosition.OnCursor)).RgbAdjust(data.GridColor, true);
             ScreenSegmentStandardHorizontal standardHorizontal2 = CreateStandardHorizontalSegment();
-            var gridColorPreview = new SubjectiveColorDisplay<AdvShieldData>(_focus.ShieldData, M.m<AdvShieldData>("Grid Color"), M.m<AdvShieldData>(new ToolTip("The color of the shield", 200f)), M.m<AdvShieldData>(I => (Color)(Var<Color>)I.Color))
+            var gridColorPreview = new SubjectiveColorDisplay<AdvShieldData>(_focus.ShieldData, M.m<AdvShieldData>("Grid Color"), M.m<AdvShieldData>(new ToolTip("The color of the shield", 200f)), M.m<AdvShieldData>(I => (Color)(Var<Color>)I.GridColor))
             {
                 PrescribedHeight = new PixelSizing(60f, Dimension.Height)
             };

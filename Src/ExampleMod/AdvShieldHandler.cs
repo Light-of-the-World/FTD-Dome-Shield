@@ -98,7 +98,7 @@ namespace AdvShields
         public AdvShieldDomeData GetDomeStats()
         {
             Shape.UpdateInfo();
-            return new AdvShieldDomeData(controller.LaserPromisedTo(), Shape.SurfaceArea());
+            return new AdvShieldDomeData(controller, Shape.SurfaceArea());
         }
 
         public void Update()
@@ -106,19 +106,18 @@ namespace AdvShields
             if (Time.time - TimeSinceLastHit < WaitTime) return;
             if (CurrentDamageSustained == 0.0f) return;
 
-            foreach (LaserNode laserNode in controller.LaserPromisedTo())
+            LaserNode laserNode = controller.ConnectLaserNode;
+
+            if (laserNode == null) return;
+            if (laserNode.HasToWaitForCharge()) return;
+
+            LaserRequestReturn request = laserNode.GetPulsedEnergyAvailable(true);
+            CurrentDamageSustained -= request.Energy;
+
+            if (CurrentDamageSustained <= 0)
             {
-                if (laserNode == null) continue;
-                if (laserNode.HasToWaitForCharge()) continue;
-
-                LaserRequestReturn request = laserNode.GetPulsedEnergyAvailable(true);
-                CurrentDamageSustained -= request.Energy;
-
-                if (CurrentDamageSustained <= 0)
-                {
-                    controller.ShieldData.Type.Us = enumShieldDomeState.On;
-                    CurrentDamageSustained = 0.0f;
-                }
+                controller.ShieldData.Type.Us = enumShieldDomeState.On;
+                CurrentDamageSustained = 0.0f;
             }
         }
     }
@@ -133,17 +132,16 @@ namespace AdvShields
 
         public float MaxHealth { get; set; }
 
-        public AdvShieldDomeData(IEnumerable<LaserNode> laserNodes, float surface)
+        public AdvShieldDomeData(AdvShieldProjector controller, float surface)
         {
             Energy = 0;
-            ArmorClass = 0;
 
-            foreach (var laser in laserNodes)
+            if (controller.ConnectLaserNode != null)
             {
-                if (laser == null) continue;
-
-                Energy += laser.GetTotalEnergyAvailable();
+                Energy = controller.ConnectLaserNode.GetTotalEnergyAvailable();
             }
+
+            ArmorClass = 0;
 
             //foreach (var laser in laserNodes)
             //{
