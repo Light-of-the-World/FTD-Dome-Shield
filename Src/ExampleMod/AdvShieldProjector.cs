@@ -81,7 +81,7 @@ namespace AdvShields
 {
     public class AdvShieldProjector : BlockWithControl
     {
-        public const float BasePowerCost = 0.005f;
+        private const float BasePowerCost = 0.005f;
         private const float ENHANCED_WINDOW_TOP = 530f;
         private const float ENHANCED_WINDOW_LEFT = 850f;
         private const float ENHANCED_WINDOW_MARGIN = 5f;
@@ -113,13 +113,14 @@ namespace AdvShields
             foreach (Vector3i vp in verificationPos)
             {
                 Block b = block.GetConstructableOrSubConstructable().AllBasicsRestricted.GetAliveBlockViaLocalPosition(vp);
+
                 if (b is LaserConnector || b is LaserTransceiver)
                 {
                     LaserComponent lc = b as LaserComponent;
                     ln = lc.Node;
                     break;
                 }
-                if (b is LaserMultipurpose)
+                else if (b is LaserMultipurpose)
                 {
                     LaserMultipurpose lm = b as LaserMultipurpose;
                     ln = lm.Node;
