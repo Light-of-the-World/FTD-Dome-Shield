@@ -113,15 +113,17 @@ namespace AdvShields
             foreach (Vector3i vp in verificationPos)
             {
                 Block b = block.GetConstructableOrSubConstructable().AllBasicsRestricted.GetAliveBlockViaLocalPosition(vp);
-
-                if (b is LaserComponent)
+                if (b is LaserConnector || b is LaserTransceiver)
                 {
-                    if (b is LaserMultipurpose || b is LaserConnector || b is LaserTransceiver)
-                    {
-                        LaserComponent lc = b as LaserComponent;
-                        ln = lc.Node;
-                        break;
-                    }
+                    LaserComponent lc = b as LaserComponent;
+                    ln = lc.Node;
+                    break;
+                }
+                if (b is LaserMultipurpose)
+                {
+                    LaserMultipurpose lm = b as LaserMultipurpose;
+                    ln = lm.Node;
+                    break;
                 }
             }
 

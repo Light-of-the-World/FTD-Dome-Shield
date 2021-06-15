@@ -135,29 +135,28 @@ namespace AdvShields
         public AdvShieldDomeData(AdvShieldProjector controller, float surface)
         {
             Energy = 0;
+            ArmorClass = 0; 
 
             if (controller.ConnectLaserNode != null)
             {
                 Energy = controller.ConnectLaserNode.GetTotalEnergyAvailable();
             }
 
-            ArmorClass = 0;
+            LaserNode laser = controller.ConnectLaserNode;
 
-            //foreach (var laser in laserNodes)
-            //{
-            //    if (laser == null)
-            //        continue;
+            if (laser != null)
+            {
+                LaserRequestReturn request = laser.GetPulsedEnergyAvailable(false);
+                float energyForLaser= laser.GetTotalEnergyAvailable();
 
-            //    var request = laser.GetPulsedEnergyAvailable(false);
-            //    var energyForLaser = laser.GetTotalEnergyAvailable();
+                ArmorClass += request.AP * 0.5f * (energyForLaser / Energy);
+            }
 
-            //    ArmorClass += request.AP * 0.2f * (energyForLaser / Energy);
-            //}
 
             SurfaceFactor = 1; //surface / AdvShieldDome.BaseSurface;
             MaxHealth = Energy / SurfaceFactor;
         }
-
+       
         public float GetCurrentHealth(float sustainedUnfactoredDamage)
         {
             return (Energy - sustainedUnfactoredDamage) / SurfaceFactor;
