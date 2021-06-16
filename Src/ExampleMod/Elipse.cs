@@ -96,7 +96,8 @@ namespace AdvShields
         {
             //Debug.Log("Advanced Shields: Check if inside shield.");
 
-            if (IsInside(position)) return false;
+            if (IsInside(position))
+                return false;
 
             //Debug.Log("Advanced Shields: Is not inside shield.");
 
