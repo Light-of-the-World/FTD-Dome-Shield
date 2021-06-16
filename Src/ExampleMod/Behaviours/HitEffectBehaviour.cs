@@ -1,33 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace AdvShields.Behaviours
 {
     public class HitEffectBehaviour : MonoBehaviour
     {
-        private float _progress;
-        private Vector4 _worldHit;
         private float _duration;
+
+        private float _magnitude;
+
+        private Color _hitColor;
+
+        private float _progress;
+
+        private Vector4 _worldHit;
+
         //private MaterialPropertyBlock _propertyBlock;
         //private Renderer _renderer;
-        private Material _material;
-        
+        //private Material _material;
+
         public void Initialize(Vector4 worldHit, Color hitColor, float magnitude, float duration)
         {
             Debug.Log("Effect initialized");
+
             _duration = duration;
+            _magnitude = magnitude;
+            _hitColor = hitColor;
             _progress = 0;
             _worldHit = Quaternion.Inverse(transform.rotation) * worldHit;
-
-            _material = GetComponent<MeshRenderer>().material;
-            _material.SetColor("_Color", hitColor);
-            _material.SetVector("_WorldHit", transform.rotation * _worldHit);
-            _material.SetFloat("_Magnitude", magnitude);
-            _material.SetFloat("_Progress", _progress);
 
             //_renderer = GetComponent<MeshRenderer>();
 
@@ -42,7 +41,7 @@ namespace AdvShields.Behaviours
             //_renderer.SetPropertyBlock(_propertyBlock);
 
             enabled = true;
-            transform.gameObject.SetActive(true);
+            gameObject.SetActive(true);
             transform.localScale = Vector3.one;
 
             //var check = this.isActiveAndEnabled;
@@ -50,24 +49,32 @@ namespace AdvShields.Behaviours
             //Debug.Log($"Hit animation started at {worldHit}");
         }
 
-
-        // Update is called once per frame
-        void Update()
+        private void Update()
         {
-            if (_material == null)
-                return;
+            Material _material = GetComponent<MeshRenderer>().material;
+            if (_material == null) return;
 
             if (_progress >= 1)
             {
                 Debug.Log("Effect destroyed");
-                Destroy(transform.gameObject);
+
+                enabled = false;
+                gameObject.SetActive(false);
+                Destroy(this);
+                Destroy(gameObject);
+
+                return;
             }
 
-            //_renderer.GetPropertyBlock(_propertyBlock);
-
             _progress = Mathf.Clamp01(_progress + Time.deltaTime / _duration);
+
+            _material = GetComponent<MeshRenderer>().material;
+            _material.SetFloat("_Magnitude", _magnitude);
+            _material.SetColor("_Color", _hitColor);
             _material.SetFloat("_Progress", _progress);
             _material.SetVector("_WorldHit", transform.rotation * _worldHit);
+
+            //_renderer.GetPropertyBlock(_propertyBlock);
             //_propertyBlock.SetFloat("_Progress", _progress);
             //_renderer.SetPropertyBlock(_propertyBlock);
         }

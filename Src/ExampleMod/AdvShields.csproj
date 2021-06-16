@@ -308,6 +308,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AdvShieldDomeData.cs" />
     <Compile Include="Behaviours\ShieldDomeBehaviour.cs" />
     <Compile Include="AdvShieldHandler.cs" />
     <Compile Include="AdvShieldProjector.cs" />
