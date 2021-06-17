@@ -198,7 +198,7 @@ namespace AdvShields
 
             DomeStats = new AdvShieldDomeData(this);
             ShieldHandler = new AdvShieldHandler(this);
-            
+
 
             //Added Get and Set priority
             //SetShieldSizeAndPosition();
@@ -399,6 +399,8 @@ namespace AdvShields
             ShieldHandler.Shape.UpdateInfo();
             ShieldDome.UpdateSizeInfo(ShieldData);
             MainConstruct.ShieldsChanged();
+
+            CarriedObject.ObjectItself.transform.localPosition = LocalPosition + new Vector3(ShieldData.LocalPosX, ShieldData.LocalPosY, ShieldData.LocalPosZ);
         }
 
         private void SetVisualDataEvents()
