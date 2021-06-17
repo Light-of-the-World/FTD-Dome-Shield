@@ -138,7 +138,6 @@ C:\Users\TUF_Z390\Documents\From The Depths\Mods\FTD-Dome-Shield\Src\ExampleMod\
 C:\Users\TUF_Z390\Documents\From The Depths\Mods\FTD-Dome-Shield\Src\ExampleMod\bin\Release\UnityEngine.VRModule.xml
 C:\Users\TUF_Z390\Documents\From The Depths\Mods\FTD-Dome-Shield\Src\ExampleMod\bin\Release\UnityEngine.WebModule.xml
 C:\Users\TUF_Z390\Documents\From The Depths\Mods\FTD-Dome-Shield\Src\ExampleMod\bin\Release\UnityEngine.WindModule.xml
-C:\Users\TUF_Z390\Documents\From The Depths\Mods\FTD-Dome-Shield\Src\ExampleMod\obj\Release\AdvShields.csprojAssemblyReference.cache
 C:\Users\TUF_Z390\Documents\From The Depths\Mods\FTD-Dome-Shield\Src\ExampleMod\obj\Release\AdvShields.Properties.Resources.resources
 C:\Users\TUF_Z390\Documents\From The Depths\Mods\FTD-Dome-Shield\Src\ExampleMod\obj\Release\AdvShields.csproj.GenerateResource.cache
 C:\Users\TUF_Z390\Documents\From The Depths\Mods\FTD-Dome-Shield\Src\ExampleMod\obj\Release\AdvShields.csproj.CoreCompileInputs.cache

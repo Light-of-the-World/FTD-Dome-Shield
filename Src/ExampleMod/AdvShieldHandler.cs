@@ -2,6 +2,7 @@
 using BrilliantSkies.Core.Threading;
 using BrilliantSkies.Ftd.DamageModels;
 using HarmonyLib;
+using System;
 using UnityEngine;
 
 namespace AdvShields
@@ -48,6 +49,8 @@ namespace AdvShields
         public void ApplyDamage(IDamageDescription DD)
         {
             TimeSinceLastHit = Time.time;
+
+            //Console.WriteLine(DD.GetType().ToString());
 
             AdvShieldDomeData stats = controller.DomeStats;
             float ac = stats.ArmorClass;

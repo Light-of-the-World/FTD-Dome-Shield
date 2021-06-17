@@ -24,16 +24,15 @@ namespace AdvShields
 
         public void UpdateInfo()
         {
-
-
-            var d = _controller.ShieldData;
+            AdvShieldData d = _controller.ShieldData;
 
             Width = d.Width / 2;
             Height = d.Height / 2;
             Length = d.Length / 2;
 
             //probably changing the shield not the block
-            Position = _controller.ShieldDome.transform.position;//_controller.GameWorldPosition;
+            //_controller.GameWorldPosition;
+            Position = _controller.ShieldDome.transform.position;
             Rotation = _controller.GameWorldRotation;
         }
 
