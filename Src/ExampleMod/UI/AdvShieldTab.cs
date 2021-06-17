@@ -59,9 +59,10 @@ namespace AdvShields.UI
             standardSegment1.AddInterpretter(Quick.SliderNub(_focus.ShieldData, t => "Width", null));
             standardSegment1.AddInterpretter(Quick.SliderNub(_focus.ShieldData, (t => "Height"), null));
             standardSegment1.AddInterpretter(new Blank(30f));
-            StringDisplay stringDisplay3 = standardSegment1.AddInterpretter(StringDisplay.Quick("<i>Select the azimuth and elevation of the shield:</i>"));
-            standardSegment1.AddInterpretter(Quick.SliderNub(_focus.ShieldData, t => "Azimuth", null));
-            standardSegment1.AddInterpretter(Quick.SliderNub(_focus.ShieldData, t => "Elevation", null));
+            StringDisplay stringDisplay3 = standardSegment1.AddInterpretter(StringDisplay.Quick("<i>Select the offset of the shield:</i>"));
+            standardSegment1.AddInterpretter(Quick.SliderNub(_focus.ShieldData, t => "LocalPosX", null));
+            standardSegment1.AddInterpretter(Quick.SliderNub(_focus.ShieldData, t => "LocalPosY", null));
+            standardSegment1.AddInterpretter(Quick.SliderNub(_focus.ShieldData, t => "LocalPosZ", null));
             standardSegment1.AddInterpretter(new Blank(30f));
             StringDisplay stringDisplay4 = standardSegment1.AddInterpretter(StringDisplay.Quick("<i>Select effect strength of the shield:</i>"));
             standardSegment1.AddInterpretter(Quick.SliderNub(_focus.ShieldData, t => "ExcessDrive", null));
