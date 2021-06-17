@@ -33,8 +33,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony, Version=2.0.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\Desktop\DNSPY AND HARMONY\net45\0Harmony.dll</HintPath>
+      <HintPath>..\packages\Lib.Harmony.2.0.4\lib\net45\0Harmony.dll</HintPath>
     </Reference>
     <Reference Include="Ai">
       <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\From The Depths\From_The_Depths_Data\Managed\Ai.dll</HintPath>
