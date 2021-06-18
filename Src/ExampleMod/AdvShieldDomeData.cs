@@ -1,16 +1,18 @@
-﻿namespace AdvShields
+﻿using System;
+
+namespace AdvShields
 {
     public class AdvShieldDomeData
     {
         private AdvShieldProjector controller;
 
-        public float Energy { get; private set; }
+        public float SurfaceFactor { get; private set; } = 1; //surface / AdvShieldDome.BaseSurface;
+
+        public float CurrentEnergy { get; private set; }
+
+        public float MaxEnergy { get; private set; }
 
         public float ArmorClass { get; private set; }
-
-        public float SurfaceFactor { get; private set; }
-
-        public float MaxHealth { get; private set; }
 
         public AdvShieldDomeData(AdvShieldProjector controller)
         {
@@ -20,7 +22,8 @@
 
         public void Update()
         {
-            Energy = 0;
+            CurrentEnergy = 0;
+            MaxEnergy = 0;
             ArmorClass = 1;
 
             LaserNode laserNode = controller.ConnectLaserNode;
@@ -41,24 +44,10 @@
 
                 float ap = LaserConstants.GetAp(doublers, pumps, true);
 
-                float energyForLaser = laserNode.GetTotalEnergyAvailable();
-
-                Energy = controller.ConnectLaserNode.GetMaximumEnergy();
-                ArmorClass += ap * 0.5f * (energyForLaser / Energy);
+                CurrentEnergy = laserNode.GetTotalEnergyAvailable() / SurfaceFactor;
+                MaxEnergy = laserNode.GetMaximumEnergy() / SurfaceFactor;
+                ArmorClass = ap * 0.5f * (CurrentEnergy / MaxEnergy);
             }
-
-            SurfaceFactor = 1; //surface / AdvShieldDome.BaseSurface;
-            MaxHealth = Energy / SurfaceFactor;
-        }
-
-        public float GetCurrentHealth(float sustainedUnfactoredDamage)
-        {
-            return (Energy - sustainedUnfactoredDamage) / SurfaceFactor;
-        }
-
-        public float GetFactoredDamage(float unfactoredDamage)
-        {
-            return unfactoredDamage * SurfaceFactor;
         }
     }
 }

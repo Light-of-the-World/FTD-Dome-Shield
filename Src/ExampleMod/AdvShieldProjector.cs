@@ -326,7 +326,7 @@ namespace AdvShields
                 text_0 = "This shield is turned on";
             }
 
-            float currentHealth = DomeStats.GetCurrentHealth(ShieldHandler.CurrentDamageSustained);
+            float currentHealth = ShieldHandler.GetCurrentHealth();
             string text_1 = "Shield is fully charged";
             float progress = 1.0f;
 
@@ -337,7 +337,7 @@ namespace AdvShields
 
                 if (timeRemaining <= 0.0f)
                 {
-                    text_1 = $"Shield is recharging, {currentHealth / DomeStats.MaxHealth * 100:F1} % complete.";
+                    text_1 = $"Shield is recharging, {currentHealth / DomeStats.MaxEnergy * 100:F1} % complete.";
                 }
                 else
                 {
@@ -351,7 +351,7 @@ namespace AdvShields
             if (flag_0) tip.Add(new ProTipSegment_TextAdjustable(500, string.Format("Charging, effective drive: {0}", Rounding.R2(CurrentStrength))), Position.Middle);
             tip.Add(new ProTipSegment_TextAdjustable(500, text_0), Position.Middle);
             tip.Add(new ProTipSegment_Text(400, $"Surface area {(int)ShieldHandler.Shape.SurfaceArea()} m2"), Position.Middle);
-            tip.Add(new ProTipSegment_Text(400, $"This shield dome has {(int)currentHealth}/{(int)DomeStats.MaxHealth} health"), Position.Middle);
+            tip.Add(new ProTipSegment_Text(400, $"This shield dome has {(int)currentHealth}/{(int)DomeStats.MaxEnergy} health"), Position.Middle);
             tip.Add(new ProTipSegment_Text(400, $"This shield dome has {DomeStats.ArmorClass} armor class"), Position.Middle);
             tip.Add(new ProTipSegment_Text(400, $"This shield dome has a fragility of {DomeStats.SurfaceFactor:F2}"), Position.Middle);
             tip.Add(new ProTipSegment_BarWithTextOnIt(400, text_1, progress));

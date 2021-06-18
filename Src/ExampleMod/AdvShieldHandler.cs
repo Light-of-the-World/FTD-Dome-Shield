@@ -31,12 +31,12 @@ namespace AdvShields
 
         public float GetCurrentHealth()
         {
-            return CurrentDamageSustained;
+            return controller.DomeStats.MaxEnergy - CurrentDamageSustained;
         }
 
         public AllConstruct GetC()
         {
-            return controller.GetConstructableOrSubConstructable() as AllConstruct;
+            return controller.GetC();
         }
 
         public AdvShieldHandler(AdvShieldProjector controller)
@@ -53,11 +53,9 @@ namespace AdvShields
             //Console.WriteLine(DD.GetType().ToString());
 
             AdvShieldDomeData stats = controller.DomeStats;
-            float ac = stats.ArmorClass;
-            float energy = stats.Energy;
 
-            float damage = DD.CalculateDamage(ac, stats.GetCurrentHealth(CurrentDamageSustained), controller.GameWorldPosition);
-            CurrentDamageSustained += stats.GetFactoredDamage(damage);
+            float damage = DD.CalculateDamage(stats.ArmorClass, GetCurrentHealth(), controller.GameWorldPosition);
+            CurrentDamageSustained += damage * stats.SurfaceFactor;
 
             float magnitude;
             Vector3 hitPosition;
@@ -80,13 +78,15 @@ namespace AdvShields
                 hitPosition = GridcastHit - controller.GameWorldPosition;
             }
 
-            if (CurrentDamageSustained >= energy)
+            float maxEnergy = stats.MaxEnergy;
+
+            if (CurrentDamageSustained >= maxEnergy)
             {
-                CurrentDamageSustained = energy;
+                CurrentDamageSustained = maxEnergy;
                 controller.ShieldData.Type.Us = enumShieldDomeState.Off;
             }
 
-            float remainingHealthFraction = Mathf.Clamp01((energy - CurrentDamageSustained) / energy);
+            float remainingHealthFraction = Mathf.Clamp01((maxEnergy - CurrentDamageSustained) / maxEnergy);
             Color hitColor = Color.Lerp(Color.red, Color.green, remainingHealthFraction);
             controller.ShieldDome.CreateAnimation(hitPosition, Mathf.Max(magnitude, 1), hitColor);
         }
