@@ -150,7 +150,7 @@ namespace AdvShields
         public IPowerRequestRecurring PowerUse { get; set; }
         public ShieldDomeBehaviour ShieldDome { get; set; }
         public AdvShieldHandler ShieldHandler { get; set; }
-        public AdvShieldDomeData DomeStats { get; set; }
+        public AdvShieldStatus ShieldStats { get; set; }
         public AdvShieldData ShieldData { get; set; } = new AdvShieldData(0U);
         public AdvShieldVisualData VisualData { get; set; } = new AdvShieldVisualData(1);
 
@@ -196,7 +196,7 @@ namespace AdvShields
 
             SetVisualDataEvents();
 
-            DomeStats = new AdvShieldDomeData(this);
+            ShieldStats = new AdvShieldStatus(this);
             ShieldHandler = new AdvShieldHandler(this);
 
 
@@ -337,7 +337,7 @@ namespace AdvShields
 
                 if (timeRemaining <= 0.0f)
                 {
-                    text_1 = $"Shield is recharging, {currentHealth / DomeStats.MaxEnergy * 100:F1} % complete.";
+                    text_1 = $"Shield is recharging, {currentHealth / ShieldStats.MaxEnergy * 100:F1} % complete.";
                 }
                 else
                 {
@@ -351,9 +351,9 @@ namespace AdvShields
             if (flag_0) tip.Add(new ProTipSegment_TextAdjustable(500, string.Format("Charging, effective drive: {0}", Rounding.R2(CurrentStrength))), Position.Middle);
             tip.Add(new ProTipSegment_TextAdjustable(500, text_0), Position.Middle);
             tip.Add(new ProTipSegment_Text(400, $"Surface area {(int)ShieldHandler.Shape.SurfaceArea()} m2"), Position.Middle);
-            tip.Add(new ProTipSegment_Text(400, $"This shield dome has {(int)currentHealth}/{(int)DomeStats.MaxEnergy} health"), Position.Middle);
-            tip.Add(new ProTipSegment_Text(400, $"This shield dome has {DomeStats.ArmorClass} armor class"), Position.Middle);
-            tip.Add(new ProTipSegment_Text(400, $"This shield dome has a fragility of {DomeStats.SurfaceFactor:F2}"), Position.Middle);
+            tip.Add(new ProTipSegment_Text(400, $"This shield dome has {(int)currentHealth}/{(int)ShieldStats.MaxEnergy} health"), Position.Middle);
+            tip.Add(new ProTipSegment_Text(400, $"This shield dome has {ShieldStats.ArmorClass} armor class"), Position.Middle);
+            tip.Add(new ProTipSegment_Text(400, $"This shield dome has a fragility of {ShieldStats.SurfaceFactor:F2}"), Position.Middle);
             tip.Add(new ProTipSegment_BarWithTextOnIt(400, text_1, progress));
             tip.Add(new ProTipSegment_TextAdjustable(500, Hot.TemperatureString + ". " + Hot.DirectionString), Position.Middle);
             tip.SetSpecial(UniqueTipType.Interaction, new ProTipSegment_TextAdjustableRight(500, "Press <<Q>> to modify shield settings"));
@@ -376,7 +376,7 @@ namespace AdvShields
 
         public void Update()
         {
-            DomeStats.Update();
+            ShieldStats.Update();
             ShieldHandler.Update();
         }
 
