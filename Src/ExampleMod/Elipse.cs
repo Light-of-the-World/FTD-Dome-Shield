@@ -1,22 +1,6 @@
-﻿using BrilliantSkies.Common.CarriedObjects;
-using BrilliantSkies.Core.Intersections;
-using BrilliantSkies.Core;
-using BrilliantSkies.Ftd.Avatar;
-using BrilliantSkies.Ftd.Game.Pools;
-using BrilliantSkies.Ftd.Missiles;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using BrilliantSkies.GridCasts;
-using BrilliantSkies.Ftd.Constructs.Modules.All.StandardExplosion;
-using BrilliantSkies.Ftd.DamageModels;
-using System.Reflection;
-using HarmonyLib;
-using BrilliantSkies.Core.UniverseRepresentation;
-using BrilliantSkies.Common.Explosions;
-using BrilliantSkies.Core.Pooling;
-using BrilliantSkies.Core.Threading;
-using BrilliantSkies.GridCasts.Interfaces;
 
 namespace AdvShields
 {
@@ -40,13 +24,15 @@ namespace AdvShields
 
         public void UpdateInfo()
         {
-            var d = _controller.ShieldData;
+            AdvShieldData d = _controller.ShieldData;
 
             Width = d.Width / 2;
             Height = d.Height / 2;
             Length = d.Length / 2;
+
             //probably changing the shield not the block
-            Position = _controller.GameWorldPosition;
+            //_controller.GameWorldPosition;
+            Position = _controller.ShieldDome.transform.position;
             Rotation = _controller.GameWorldRotation;
         }
 

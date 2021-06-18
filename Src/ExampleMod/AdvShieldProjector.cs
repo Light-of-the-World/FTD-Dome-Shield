@@ -81,7 +81,7 @@ namespace AdvShields
 {
     public class AdvShieldProjector : BlockWithControl
     {
-        public const float BasePowerCost = 0.005f;
+        private const float BasePowerCost = 0.005f;
         private const float ENHANCED_WINDOW_TOP = 530f;
         private const float ENHANCED_WINDOW_LEFT = 850f;
         private const float ENHANCED_WINDOW_MARGIN = 5f;
@@ -113,13 +113,14 @@ namespace AdvShields
             foreach (Vector3i vp in verificationPos)
             {
                 Block b = block.GetConstructableOrSubConstructable().AllBasicsRestricted.GetAliveBlockViaLocalPosition(vp);
+
                 if (b is LaserConnector || b is LaserTransceiver)
                 {
                     LaserComponent lc = b as LaserComponent;
                     ln = lc.Node;
                     break;
                 }
-                if (b is LaserMultipurpose)
+                else if (b is LaserMultipurpose)
                 {
                     LaserMultipurpose lm = b as LaserMultipurpose;
                     ln = lm.Node;
@@ -149,6 +150,7 @@ namespace AdvShields
         public IPowerRequestRecurring PowerUse { get; set; }
         public ShieldDomeBehaviour ShieldDome { get; set; }
         public AdvShieldHandler ShieldHandler { get; set; }
+        public AdvShieldDomeData DomeStats { get; set; }
         public AdvShieldData ShieldData { get; set; } = new AdvShieldData(0U);
         public AdvShieldVisualData VisualData { get; set; } = new AdvShieldVisualData(1);
 
@@ -194,7 +196,10 @@ namespace AdvShields
 
             SetVisualDataEvents();
 
+            DomeStats = new AdvShieldDomeData(this);
             ShieldHandler = new AdvShieldHandler(this);
+
+
             //Added Get and Set priority
             //SetShieldSizeAndPosition();
             //PoweredDecoy CurrentPower = base.TargetPower.PowerUse.Us;
@@ -235,7 +240,7 @@ namespace AdvShields
                 MainConstruct.PowerUsageCreationAndFuelRestricted.AddRecurringPowerUser(PowerUse);
                 MainConstruct.HotObjectsRestricted.AddHotObject(Hot);
                 MainConstruct.ShieldsChanged();
-                //MainConstruct.SchedulerRestricted.RegisterFor1PerSecond(new Action<ISectorTimeStep>(Update));
+                MainConstruct.SchedulerRestricted.RegisterForLateUpdate(Update);
             }
 
             if (change.IsLostToConstructOrConstructLost)
@@ -246,7 +251,7 @@ namespace AdvShields
                 MainConstruct.PowerUsageCreationAndFuelRestricted.RemoveRecurringPowerUser(PowerUse);
                 MainConstruct.HotObjectsRestricted.RemoveHotObject(Hot);
                 MainConstruct.ShieldsChanged();
-                //MainConstruct.SchedulerRestricted.UnregisterFor1PerSecond(new Action<ISectorTimeStep>(Update));
+                MainConstruct.SchedulerRestricted.UnregisterForLateUpdate(Update);
             }
         }
 
@@ -266,7 +271,7 @@ namespace AdvShields
 
             //ConnectToAllLaserSources();
             ConnectLaserNode = LaserComponentSearch(this);
-            ShieldHandler.Update();
+            //ShieldHandler.Update();
         }
 
         public override void PrepForDelete()
@@ -321,8 +326,7 @@ namespace AdvShields
                 text_0 = "This shield is turned on";
             }
 
-            AdvShieldDomeData domeStats = ShieldHandler.GetDomeStats();
-            float currentHealth = domeStats.GetCurrentHealth(ShieldHandler.CurrentDamageSustained);
+            float currentHealth = ShieldHandler.GetCurrentHealth();
             string text_1 = "Shield is fully charged";
             float progress = 1.0f;
 
@@ -333,7 +337,7 @@ namespace AdvShields
 
                 if (timeRemaining <= 0.0f)
                 {
-                    text_1 = $"Shield is recharging, {currentHealth / domeStats.MaxHealth * 100:F1} % complete.";
+                    text_1 = $"Shield is recharging, {currentHealth / DomeStats.MaxEnergy * 100:F1} % complete.";
                 }
                 else
                 {
@@ -347,9 +351,9 @@ namespace AdvShields
             if (flag_0) tip.Add(new ProTipSegment_TextAdjustable(500, string.Format("Charging, effective drive: {0}", Rounding.R2(CurrentStrength))), Position.Middle);
             tip.Add(new ProTipSegment_TextAdjustable(500, text_0), Position.Middle);
             tip.Add(new ProTipSegment_Text(400, $"Surface area {(int)ShieldHandler.Shape.SurfaceArea()} m2"), Position.Middle);
-            tip.Add(new ProTipSegment_Text(400, $"This shield dome has {(int)currentHealth}/{(int)domeStats.MaxHealth} health"), Position.Middle);
-            tip.Add(new ProTipSegment_Text(400, $"This shield dome has {domeStats.ArmorClass} armor class"), Position.Middle);
-            tip.Add(new ProTipSegment_Text(400, $"This shield dome has a fragility of {domeStats.SurfaceFactor:F2}"), Position.Middle);
+            tip.Add(new ProTipSegment_Text(400, $"This shield dome has {(int)currentHealth}/{(int)DomeStats.MaxEnergy} health"), Position.Middle);
+            tip.Add(new ProTipSegment_Text(400, $"This shield dome has {DomeStats.ArmorClass} armor class"), Position.Middle);
+            tip.Add(new ProTipSegment_Text(400, $"This shield dome has a fragility of {DomeStats.SurfaceFactor:F2}"), Position.Middle);
             tip.Add(new ProTipSegment_BarWithTextOnIt(400, text_1, progress));
             tip.Add(new ProTipSegment_TextAdjustable(500, Hot.TemperatureString + ". " + Hot.DirectionString), Position.Middle);
             tip.SetSpecial(UniqueTipType.Interaction, new ProTipSegment_TextAdjustableRight(500, "Press <<Q>> to modify shield settings"));
@@ -370,6 +374,12 @@ namespace AdvShields
             GetConstructableOrSubConstructable().iMultiplayerSyncroniser.RPCRequest_SyncroniseBlock(this, b);
         }
 
+        public void Update()
+        {
+            DomeStats.Update();
+            ShieldHandler.Update();
+        }
+
         public float GetExcessDriveAfterFactoring()
         {
             return Mathf.Clamp(ShieldData.ExcessDrive * ShieldData.ExternalDriveFactor, 0.0f, 10f);
@@ -386,8 +396,11 @@ namespace AdvShields
             //ShieldClass.SetColor(ShieldData.Color);
             //VisualData.BaseColor.Us = ShieldData.BaseColor;
             //VisualData.GridColor.Us = ShieldData.GridColor;
+            ShieldHandler.Shape.UpdateInfo();
             ShieldDome.UpdateSizeInfo(ShieldData);
             MainConstruct.ShieldsChanged();
+
+            CarriedObject.ObjectItself.transform.localPosition = LocalPosition + new Vector3(ShieldData.LocalPosX, ShieldData.LocalPosY, ShieldData.LocalPosZ);
         }
 
         private void SetVisualDataEvents()

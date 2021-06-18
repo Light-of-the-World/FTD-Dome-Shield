@@ -3,7 +3,6 @@ using BrilliantSkies.Core.Threading;
 using BrilliantSkies.Ftd.DamageModels;
 using HarmonyLib;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace AdvShields
@@ -32,12 +31,12 @@ namespace AdvShields
 
         public float GetCurrentHealth()
         {
-            return CurrentDamageSustained;
+            return controller.DomeStats.MaxEnergy - CurrentDamageSustained;
         }
 
         public AllConstruct GetC()
         {
-            return controller.GetConstructableOrSubConstructable() as AllConstruct;
+            return controller.GetC();
         }
 
         public AdvShieldHandler(AdvShieldProjector controller)
@@ -51,17 +50,12 @@ namespace AdvShields
         {
             TimeSinceLastHit = Time.time;
 
-            AdvShieldDomeData stats = GetDomeStats();
-            float ac = stats.ArmorClass;
-            float energy = stats.Energy;
+            //Console.WriteLine(DD.GetType().ToString());
 
-            float damage = DD.CalculateDamage(ac, stats.GetCurrentHealth(CurrentDamageSustained), controller.GameWorldPosition);
-            CurrentDamageSustained += stats.GetFactoredDamage(damage);
+            AdvShieldDomeData stats = controller.DomeStats;
 
-            //Console.WriteLine("\nDD type : " + DD.GetType().ToString() + "\nDamege : " + damage);
-
-            //float magnitude = expDD == null ? damage / 300 : expDD.Radius;
-            //Vector3 hitPosition = (expDD == null ? GridcastHit : expDD.Position) - Controller.GameWorldPosition;
+            float damage = DD.CalculateDamage(stats.ArmorClass, GetCurrentHealth(), controller.GameWorldPosition);
+            CurrentDamageSustained += damage * stats.SurfaceFactor;
 
             float magnitude;
             Vector3 hitPosition;
@@ -84,21 +78,17 @@ namespace AdvShields
                 hitPosition = GridcastHit - controller.GameWorldPosition;
             }
 
-            if (CurrentDamageSustained >= energy)
+            float maxEnergy = stats.MaxEnergy;
+
+            if (CurrentDamageSustained >= maxEnergy)
             {
-                CurrentDamageSustained = energy;
+                CurrentDamageSustained = maxEnergy;
                 controller.ShieldData.Type.Us = enumShieldDomeState.Off;
             }
 
-            float remainingHealthFraction = Mathf.Clamp01((energy - CurrentDamageSustained) / energy);
+            float remainingHealthFraction = Mathf.Clamp01((maxEnergy - CurrentDamageSustained) / maxEnergy);
             Color hitColor = Color.Lerp(Color.red, Color.green, remainingHealthFraction);
             controller.ShieldDome.CreateAnimation(hitPosition, Mathf.Max(magnitude, 1), hitColor);
-        }
-
-        public AdvShieldDomeData GetDomeStats()
-        {
-            Shape.UpdateInfo();
-            return new AdvShieldDomeData(controller, Shape.SurfaceArea());
         }
 
         public void Update()
@@ -111,8 +101,18 @@ namespace AdvShields
             if (laserNode == null) return;
             if (laserNode.HasToWaitForCharge()) return;
 
-            LaserRequestReturn request = laserNode.GetPulsedEnergyAvailable(true);
-            CurrentDamageSustained -= request.Energy;
+            LaserRequestReturn continuousReturn = laserNode.GetCWEnergyAvailable(true);
+            LaserRequestReturn pulsedReturn = laserNode.GetPulsedEnergyAvailable(true);
+
+            if (continuousReturn.WorthFiring)
+            {
+                CurrentDamageSustained -= continuousReturn.Energy;
+            }
+
+            if (pulsedReturn.WorthFiring)
+            {
+                CurrentDamageSustained -= pulsedReturn.Energy;
+            }
 
             if (CurrentDamageSustained <= 0)
             {
@@ -121,50 +121,4 @@ namespace AdvShields
             }
         }
     }
-
-    public struct AdvShieldDomeData
-    {
-        public float Energy { get; set; }
-
-        public float ArmorClass { get; set; }
-
-        public float SurfaceFactor { get; set; }
-
-        public float MaxHealth { get; set; }
-
-        public AdvShieldDomeData(AdvShieldProjector controller, float surface)
-        {
-            Energy = 0;
-            ArmorClass = 0; 
-
-            if (controller.ConnectLaserNode != null)
-            {
-                Energy = controller.ConnectLaserNode.GetTotalEnergyAvailable();
-            }
-
-            LaserNode laser = controller.ConnectLaserNode;
-
-            if (laser != null)
-            {
-                LaserRequestReturn request = laser.GetPulsedEnergyAvailable(false);
-                float energyForLaser= laser.GetTotalEnergyAvailable();
-
-                ArmorClass += request.AP * 0.5f * (energyForLaser / Energy);
-            }
-
-
-            SurfaceFactor = 1; //surface / AdvShieldDome.BaseSurface;
-            MaxHealth = Energy / SurfaceFactor;
-        }
-       
-        public float GetCurrentHealth(float sustainedUnfactoredDamage)
-        {
-            return (Energy - sustainedUnfactoredDamage) / SurfaceFactor;
-        }
-
-        public float GetFactoredDamage(float unfactoredDamage)
-        {
-            return unfactoredDamage * SurfaceFactor;
-        }
-    }//removed *2
 }

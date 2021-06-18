@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-using AdvShields.Models;
+﻿using AdvShields.Models;
 using BrilliantSkies.Core.Serialisation.Parameters.Prototypes;
+using UnityEngine;
 
 namespace AdvShields.Behaviours
 {
@@ -19,20 +14,27 @@ namespace AdvShields.Behaviours
         //public ShaderFloatProperty Expansion { get; set; }
         //public ShaderFloatProperty NormalSwitch { get; set; }
 
-        public ShaderFloatProperty Progress { get; set; }
+        private bool isActive;
 
-        public float TimeToShift { get; set; }
-        public bool IsActive { get; set; }
+        private ShaderFloatProperty progress;
 
-        public void Awake()
+        private float timeToShift = 4;
+
+        public void Update()
         {
+            if (isActive && progress < 1)
+            {
+                progress.Us = Mathf.Clamp01(progress + Time.deltaTime / timeToShift);
+            }
+            else if (!isActive && progress > 0)
+            {
+                progress.Us = Mathf.Clamp01(progress - Time.deltaTime / timeToShift);
+            }
         }
 
         public void Initialize(Material material)
         {
-            Progress = new ShaderFloatProperty(material, "_Progress", 0, 0, 1, NoLimitMode.None);
-            
-            TimeToShift = 4;
+            progress = new ShaderFloatProperty(material, "_Progress", 0, 0, 1, NoLimitMode.None);
         }
 
         public void UpdateSizeInfo(AdvShieldData data)
@@ -40,30 +42,18 @@ namespace AdvShields.Behaviours
             transform.localScale = new Vector3(data.Width, data.Height, data.Length);
         }
 
-        public void Update()
-        {
-            if (IsActive && Progress < 1)
-                Progress.Us = Mathf.Clamp01(Progress + Time.deltaTime / TimeToShift);
-            else if (!IsActive && this.Progress > 0)
-                Progress.Us = Mathf.Clamp01(Progress - Time.deltaTime / TimeToShift);
-        }
-        
-
         public bool SetState(bool isActive)
         {
-            if (IsActive == isActive)
-                return false;
+            if (this.isActive == isActive) return false;
 
-            IsActive = isActive;
+            this.isActive = isActive;
             return true;
         }
 
-
         public void CreateAnimation(Vector3 worldHit, float magnitude, Color color)
         {
-            var obj = Instantiate(StaticStorage.HitEffectObject, transform, false);
-            var behaviour = obj.GetComponent<HitEffectBehaviour>();
-            
+            GameObject obj = Instantiate(StaticStorage.HitEffectObject, transform, false);
+            HitEffectBehaviour behaviour = obj.GetComponent<HitEffectBehaviour>();
             behaviour.Initialize(worldHit, color, magnitude, 1.5f);
         }
     }
