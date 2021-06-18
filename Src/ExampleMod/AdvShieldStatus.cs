@@ -2,7 +2,7 @@
 
 namespace AdvShields
 {
-    public class AdvShieldDomeData
+    public class AdvShieldStatus
     {
         private AdvShieldProjector controller;
 
@@ -14,7 +14,7 @@ namespace AdvShields
 
         public float ArmorClass { get; private set; }
 
-        public AdvShieldDomeData(AdvShieldProjector controller)
+        public AdvShieldStatus(AdvShieldProjector controller)
         {
             this.controller = controller;
             Update();

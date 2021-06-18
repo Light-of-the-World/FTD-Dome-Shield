@@ -31,7 +31,7 @@ namespace AdvShields
 
         public float GetCurrentHealth()
         {
-            return controller.DomeStats.MaxEnergy - CurrentDamageSustained;
+            return controller.ShieldStats.MaxEnergy - CurrentDamageSustained;
         }
 
         public AllConstruct GetC()
@@ -52,7 +52,7 @@ namespace AdvShields
 
             //Console.WriteLine(DD.GetType().ToString());
 
-            AdvShieldDomeData stats = controller.DomeStats;
+            AdvShieldStatus stats = controller.ShieldStats;
 
             float damage = DD.CalculateDamage(stats.ArmorClass, GetCurrentHealth(), controller.GameWorldPosition);
             CurrentDamageSustained += damage * stats.SurfaceFactor;

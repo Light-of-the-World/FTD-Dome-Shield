@@ -1,6 +1,5 @@
 C:\Users\TUF_Z390\Documents\From The Depths\Mods\FTD-Dome-Shield\Src\ExampleMod\bin\Release\AdvShields.dll.config
 C:\Users\TUF_Z390\Documents\From The Depths\Mods\FTD-Dome-Shield\Src\ExampleMod\bin\Release\AdvShields.dll
-C:\Users\TUF_Z390\Documents\From The Depths\Mods\FTD-Dome-Shield\Src\ExampleMod\bin\Release\0Harmony.dll
 C:\Users\TUF_Z390\Documents\From The Depths\Mods\FTD-Dome-Shield\Src\ExampleMod\bin\Release\Ai.dll
 C:\Users\TUF_Z390\Documents\From The Depths\Mods\FTD-Dome-Shield\Src\ExampleMod\bin\Release\Assembly-CSharp-firstpass.dll
 C:\Users\TUF_Z390\Documents\From The Depths\Mods\FTD-Dome-Shield\Src\ExampleMod\bin\Release\Assembly-CSharp.dll
@@ -143,3 +142,4 @@ C:\Users\TUF_Z390\Documents\From The Depths\Mods\FTD-Dome-Shield\Src\ExampleMod\
 C:\Users\TUF_Z390\Documents\From The Depths\Mods\FTD-Dome-Shield\Src\ExampleMod\obj\Release\AdvShields.csproj.CoreCompileInputs.cache
 C:\Users\TUF_Z390\Documents\From The Depths\Mods\FTD-Dome-Shield\Src\ExampleMod\obj\Release\AdvShields.csproj.CopyComplete
 C:\Users\TUF_Z390\Documents\From The Depths\Mods\FTD-Dome-Shield\Src\ExampleMod\obj\Release\AdvShields.dll
+C:\Users\TUF_Z390\Documents\From The Depths\Mods\FTD-Dome-Shield\Src\ExampleMod\obj\Release\AdvShields.csprojAssemblyReference.cache
