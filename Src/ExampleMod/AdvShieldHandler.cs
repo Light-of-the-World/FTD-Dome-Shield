@@ -1,4 +1,5 @@
-﻿using AdvShields.Models;
+﻿using AdvShields.Behaviours;
+using AdvShields.Models;
 using BrilliantSkies.Core.Threading;
 using BrilliantSkies.Ftd.DamageModels;
 using HarmonyLib;
@@ -88,7 +89,14 @@ namespace AdvShields
 
             float remainingHealthFraction = Mathf.Clamp01((maxEnergy - CurrentDamageSustained) / maxEnergy);
             Color hitColor = Color.Lerp(Color.red, Color.green, remainingHealthFraction);
-            controller.ShieldDome.CreateAnimation(hitPosition, Mathf.Max(magnitude, 1), hitColor);
+            CreateAnimation(hitPosition, Mathf.Max(magnitude, 1), hitColor);
+        }
+
+        public void CreateAnimation(Vector3 worldHit, float magnitude, Color color)
+        {
+            GameObject obj = UnityEngine.Object.Instantiate(StaticStorage.HitEffectObject, controller.ShieldDome.transform, false);
+            HitEffectBehaviour behaviour = obj.GetComponent<HitEffectBehaviour>();
+            behaviour.Initialize(worldHit, color, magnitude, 1.5f);
         }
 
         public void Update()

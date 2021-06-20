@@ -1,5 +1,4 @@
 ﻿using AdvShields.Models;
-using BrilliantSkies.Core.Timing;
 using BrilliantSkies.Core.UniverseRepresentation;
 using BrilliantSkies.Ftd.DamageLogging;
 using BrilliantSkies.Ftd.DamageModels;
@@ -96,12 +95,11 @@ namespace AdvShields
                 GridCastHit hit = GridHitPool.Pool.Acquire();
                 hit.Setup(hitPointInLocal, allConstructBlock.GameObject, range, HitSource.Block, results.Direction);
                 hit.DamageableObject = item.ShieldHandler;
+                hit.OutPointGlobal = hitPointIn;
                 hit.From = BarrierCondition.Unknown;
 
                 item.PlayShieldHit(hitPointIn);
                 results.AddAndSort(hit);
-
-                //Console.WriteLine("Hit!");
             }
         }
     }

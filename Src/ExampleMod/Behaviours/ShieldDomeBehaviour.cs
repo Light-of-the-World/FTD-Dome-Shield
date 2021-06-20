@@ -50,12 +50,5 @@ namespace AdvShields.Behaviours
             this.isActive = isActive;
             return true;
         }
-
-        public void CreateAnimation(Vector3 worldHit, float magnitude, Color color)
-        {
-            GameObject obj = Instantiate(StaticStorage.HitEffectObject, transform, false);
-            HitEffectBehaviour behaviour = obj.GetComponent<HitEffectBehaviour>();
-            behaviour.Initialize(worldHit, color, magnitude, 1.5f);
-        }
     }
 }
