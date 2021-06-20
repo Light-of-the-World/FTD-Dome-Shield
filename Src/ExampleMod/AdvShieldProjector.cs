@@ -153,6 +153,7 @@ namespace AdvShields
             velocityMeasurement = new VelocityMeasurement(new UniversePositionReturnBlockInMainFrame(this, PositionReturnBlockValidRequirement.Alive));
 
             //Added Get and Set priority
+            //SetShieldSizeAndPosition();
             //PoweredDecoy CurrentPower = base.TargetPower.PowerUse.Us;
             PowerUse = new PowerRequestRecurring(this, PowerRequestType.Shield, PriorityData.Get, PriorityData.Set)
             {
@@ -214,6 +215,7 @@ namespace AdvShields
             }
 
             ConnectLaserNode = LaserComponentSearch();
+            //ConnectToAllLaserSources();
             //ShieldHandler.Update();
         }
 
@@ -296,7 +298,7 @@ namespace AdvShields
             tip.Add(new ProTipSegment_Text(400, $"Surface area {(int)ShieldHandler.Shape.SurfaceArea()} m2"), Position.Middle);
             tip.Add(new ProTipSegment_Text(400, $"This shield dome has {(int)currentHealth}/{(int)ShieldStats.MaxEnergy} health"), Position.Middle);
             tip.Add(new ProTipSegment_Text(400, $"This shield dome has {ShieldStats.ArmorClass} armor class"), Position.Middle);
-            tip.Add(new ProTipSegment_Text(400, $"This shield dome has a fragility of {SurfaceFactor:F2}"), Position.Middle);
+            tip.Add(new ProTipSegment_Text(400, $"This shield dome has a fragility of {ShieldStats.Fragility}"), Position.Middle);
             tip.Add(new ProTipSegment_BarWithTextOnIt(400, text_1, progress));
             tip.Add(new ProTipSegment_TextAdjustable(500, module_Hot.TemperatureString + ". " + module_Hot.DirectionString), Position.Middle);
             tip.SetSpecial(UniqueTipType.Interaction, new ProTipSegment_TextAdjustableRight(500, "Press <<Q>> to modify shield settings"));

@@ -11,6 +11,8 @@ namespace AdvShields
         public float MaxEnergy { get; private set; }
 
         public float ArmorClass { get; private set; }
+        
+        public float Fragility { get; private set; }
 
         public AdvShieldStatus(AdvShieldProjector controller)
         {
@@ -22,6 +24,7 @@ namespace AdvShields
         {
             Energy = 0;
             ArmorClass = 1;
+            Fragility = 0;
 
             LaserNode laserNode = controller.ConnectLaserNode;
 
@@ -29,27 +32,38 @@ namespace AdvShields
             {
                 int doublers = 0;
                 int pumps = 0;
-
+                int allQSwitches = 0;
                 foreach (LaserCoupler laserCoupler in laserNode.couplers)
                 {
+                    allQSwitches = laserCoupler.NbQSwitches;
                     foreach (BeamInfo beamInfo in laserCoupler.beamInfo)
                     {
                         doublers += beamInfo.FrequencyDoublers;
                         pumps += beamInfo.CubicMetresOfPumping;
                     }
+
+                    if (allQSwitches == 0)
+                    {
+                        Fragility = 40;
+                    }
+                    else
+                    {
+                        Fragility = allQSwitches * 2;
+                    }
                 }
 
                 float surfaceFactor = controller.SurfaceFactor;
                 float ap = LaserConstants.GetAp(doublers, pumps, true);
-                MaxEnergy = laserNode.GetMaximumEnergy() / surfaceFactor;
+                MaxEnergy = laserNode.GetMaximumEnergy();
                 Energy = laserNode.GetTotalEnergyAvailable() / surfaceFactor;
-                ArmorClass = ap * 0.2f * (Energy / MaxEnergy);
-            }
-        }
+                ArmorClass = ap * 0.5f * (Energy / MaxEnergy);
 
-        /*
-        public float GetCurrentHealth(float sustainedUnfactoredDamage) => (Energy - sustainedUnfactoredDamage) / SurfaceFactor;
-        public float GetFactoredDamage(float unfactoredDamage) => unfactoredDamage / 2 * SurfaceFactor;
-        */
+            }
+
+            /*
+            public float GetCurrentHealth(float sustainedUnfactoredDamage) => (Energy - sustainedUnfactoredDamage) / SurfaceFactor;
+            public float GetFactoredDamage(float unfactoredDamage) => unfactoredDamage / 2 * SurfaceFactor;
+            */
+        }
     }
 }
