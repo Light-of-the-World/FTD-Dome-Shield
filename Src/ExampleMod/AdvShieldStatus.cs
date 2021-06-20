@@ -6,8 +6,6 @@ namespace AdvShields
     {
         private AdvShieldProjector controller;
 
-        public float SurfaceFactor { get; private set; } = 1; //surface / AdvShieldDome.BaseSurface;
-
         public float Energy { get; private set; }
 
         public float MaxEnergy { get; private set; }
@@ -41,15 +39,17 @@ namespace AdvShields
                     }
                 }
 
+                float surfaceFactor = controller.SurfaceFactor;
                 float ap = LaserConstants.GetAp(doublers, pumps, true);
-                MaxEnergy = laserNode.GetMaximumEnergy() / SurfaceFactor;
-                Energy = laserNode.GetTotalEnergyAvailable() / SurfaceFactor;
-                ArmorClass = ap * 0.2f * (Energy/MaxEnergy);
+                MaxEnergy = laserNode.GetMaximumEnergy() / surfaceFactor;
+                Energy = laserNode.GetTotalEnergyAvailable() / surfaceFactor;
+                ArmorClass = ap * 0.2f * (Energy / MaxEnergy);
             }
         }
-        /*public float GetCurrentHealth(float sustainedUnfactoredDamage)
-    => (Energy - sustainedUnfactoredDamage) / SurfaceFactor;
-        public float GetFactoredDamage(float unfactoredDamage)
-            => unfactoredDamage / 2 * SurfaceFactor;*/
+
+        /*
+        public float GetCurrentHealth(float sustainedUnfactoredDamage) => (Energy - sustainedUnfactoredDamage) / SurfaceFactor;
+        public float GetFactoredDamage(float unfactoredDamage) => unfactoredDamage / 2 * SurfaceFactor;
+        */
     }
 }

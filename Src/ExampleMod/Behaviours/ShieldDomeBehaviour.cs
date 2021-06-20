@@ -32,8 +32,9 @@ namespace AdvShields.Behaviours
             }
         }
 
-        public void Initialize(Material material)
+        public void Initialize()
         {
+            Material material = gameObject.GetComponent<MeshRenderer>().material;
             progress = new ShaderFloatProperty(material, "_Progress", 0, 0, 1, NoLimitMode.None);
         }
 

@@ -83,7 +83,7 @@ namespace AdvShields.UI
 
                 float powerUse = Rounding.R2(_focus.PowerUse.PowerUsed);
                 float num1 = Rounding.R2(_focus.PowerUse.FractionOfPowerRequestedThatWasProvided * 100f);
-                float num2 = Rounding.R2(AdvShieldProjector.GetDisruptionRegenerationRate(powerUse));
+                float num2 = Rounding.R2(ShieldProjector.GetDisruptionRegenerationRate(powerUse));
                 return string.Format("Power use: {0} (working at {1}%). Disruption strength recovery at full power: {2}/s", powerUse, num1, num2);
             }))));
 
