@@ -34,39 +34,15 @@ namespace AdvShields
         [Slider(7, "Effect strength {0}", "The strength of the effect and how much power is used for the shield", 0.0f, 10f, 0.1f, 1f)]
         public Var<float> ExcessDrive { get; set; } = new VarFloatClamp(1f, 0.0f, 10f, NoLimitMode.None);
 
-        /*[Slider(8, "Azimuth angle {0}°", "The azimuth angle of the shield", -45f, 45f, 0.1f, 0.0f)]
+        /*
+        [Slider(8, "Azimuth angle {0}°", "The azimuth angle of the shield", -45f, 45f, 0.1f, 0.0f)]
         public Var<float> Azimuth { get; set; } = new VarFloatClamp(0.0f, -45f, 45f, NoLimitMode.None);
 
         [Slider(9, "Elevation angle {0}°", "The elevation angle of the shield", -45f, 45f, 0.1f, 0.0f)]
-        public Var<float> Elevation { get; set; } = new VarFloatClamp(0.0f, -45f, 45f, NoLimitMode.None);*/
+        public Var<float> Elevation { get; set; } = new VarFloatClamp(0.0f, -45f, 45f, NoLimitMode.None);
+        */
 
         [Variable(10, "Shield type", "The type of the shield")]
         public Var<enumShieldDomeState> Type { get; set; } = new Var<enumShieldDomeState>(enumShieldDomeState.On);
-
-
-
-        [Slider(11, "Edge {0}", "Test", 0.0f, 10f, 0.01f)]
-        public Var<float> Edge { get; set; } = new VarFloatClamp(1f, 0.0f, 10f, NoLimitMode.None);
-
-        [Slider(12, "Fresnel {0}", "Test", 0.0f, 10f, 0.01f)]
-        public Var<float> Fresnel { get; set; } = new VarFloatClamp(1f, 0.0f, 10f, NoLimitMode.None);
-
-        [Slider(13, "AssembleSpeed {0}", "Test", 0.0f, 10f, 0.01f)]
-        public Var<float> AssembleSpeed { get; set; } = new VarFloatClamp(1f, 0.0f, 10f, NoLimitMode.None);
-
-        [Slider(14, "SinWaveFactor {0}", "Test", 0.0f, 10f, 0.01f)]
-        public Var<float> SinWaveFactor { get; set; } = new VarFloatClamp(1f, 0.0f, 10f, NoLimitMode.None);
-
-        [Slider(15, "SinWaveSpeed {0}", "Test", 0.0f, 10f, 0.01f)]
-        public Var<float> SinWaveSpeed { get; set; } = new VarFloatClamp(1f, 0.0f, 10f, NoLimitMode.None);
-
-        [Slider(16, "SinWaveSize {0}", "Test", 0.0f, 10f, 0.01f)]
-        public Var<float> SinWaveSize { get; set; } = new VarFloatClamp(1f, 0.0f, 10f, NoLimitMode.None);
-
-        [Variable(17, "Shield base color", "The colour of the shield")]
-        public VarColor BaseColor { get; set; } = new VarColor(UnityEngine.Color.white);
-
-        [Variable(18, "Shield grid color", "The colour of the shield")]
-        public VarColor GridColor { get; set; } = new VarColor(UnityEngine.Color.white);
     }
 }

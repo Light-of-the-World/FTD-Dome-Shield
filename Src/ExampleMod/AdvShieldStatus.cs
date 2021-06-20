@@ -44,12 +44,13 @@ namespace AdvShields
                 float ap = LaserConstants.GetAp(doublers, pumps, true);
                 MaxEnergy = laserNode.GetMaximumEnergy() / SurfaceFactor;
                 Energy = laserNode.GetTotalEnergyAvailable() / SurfaceFactor;
-                ArmorClass = ap * 0.2f * (Energy/MaxEnergy);
+                ArmorClass = ap * 0.2f * (Energy / MaxEnergy);
             }
         }
-        /*public float GetCurrentHealth(float sustainedUnfactoredDamage)
-    => (Energy - sustainedUnfactoredDamage) / SurfaceFactor;
-        public float GetFactoredDamage(float unfactoredDamage)
-            => unfactoredDamage / 2 * SurfaceFactor;*/
+
+        /*
+        public float GetCurrentHealth(float sustainedUnfactoredDamage) => (Energy - sustainedUnfactoredDamage) / SurfaceFactor;
+        public float GetFactoredDamage(float unfactoredDamage) => unfactoredDamage / 2 * SurfaceFactor;
+        */
     }
 }
