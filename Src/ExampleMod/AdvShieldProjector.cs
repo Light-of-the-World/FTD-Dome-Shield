@@ -153,7 +153,6 @@ namespace AdvShields
             velocityMeasurement = new VelocityMeasurement(new UniversePositionReturnBlockInMainFrame(this, PositionReturnBlockValidRequirement.Alive));
 
             //Added Get and Set priority
-            //SetShieldSizeAndPosition();
             //PoweredDecoy CurrentPower = base.TargetPower.PowerUse.Us;
             PowerUse = new PowerRequestRecurring(this, PowerRequestType.Shield, PriorityData.Get, PriorityData.Set)
             {
@@ -215,7 +214,6 @@ namespace AdvShields
             }
 
             ConnectLaserNode = LaserComponentSearch();
-            //ConnectToAllLaserSources();
             //ShieldHandler.Update();
         }
 
@@ -436,7 +434,7 @@ namespace AdvShields
 
         private LaserNode LaserComponentSearch()
         {
-            var verificationPosition = SetVerificationPosition();
+            Vector3i[] verificationPosition = SetVerificationPosition();
             LaserNode ln = null;
 
             foreach (Vector3i vp in verificationPosition)
