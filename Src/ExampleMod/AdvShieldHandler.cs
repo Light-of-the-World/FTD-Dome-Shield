@@ -55,7 +55,7 @@ namespace AdvShields
             AdvShieldStatus stats = controller.ShieldStats;
 
             float damage = DD.CalculateDamage(stats.ArmorClass, GetCurrentHealth(), controller.GameWorldPosition);
-            CurrentDamageSustained += damage * stats.SurfaceFactor;
+            CurrentDamageSustained += damage * controller.SurfaceFactor;
 
             float magnitude;
             Vector3 hitPosition;

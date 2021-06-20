@@ -1,13 +1,54 @@
 ﻿using AdvShields.Models;
+using BrilliantSkies.Core.Timing;
+using BrilliantSkies.Core.UniverseRepresentation;
 using BrilliantSkies.Ftd.DamageLogging;
 using BrilliantSkies.Ftd.DamageModels;
+using BrilliantSkies.Ftd.Game.Pools;
 using BrilliantSkies.GridCasts;
 using HarmonyLib;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection.Emit;
 using UnityEngine;
 
 namespace AdvShields
 {
+    public static class CIL_Control
+    {
+        public static int Search(List<CodeInstruction> codes, List<string> searchList)
+        {
+            int maxCount = codes.Count - searchList.Count;
+            int targetIndex = -1;
+
+            for (int i = 0; i < maxCount; i++)
+            {
+                int count = 0;
+
+                foreach (string str in searchList)
+                {
+                    if (codes[i + count].ToString() == str)
+                    {
+                        ++count;
+                    }
+                    else
+                    {
+                        count = 0;
+                        break;
+                    }
+                }
+
+                if (count > 0)
+                {
+                    targetIndex = i;
+                    break;
+                }
+            }
+
+            return targetIndex;
+        }
+    }
+
     [HarmonyPatch(typeof(ExplosionExtras), "ExplodeNearbyObjects", new Type[] { typeof(Vector3), typeof(float), typeof(float), typeof(IDamageLogger), typeof(bool) })]
     internal class ExplosionOnMainConstructPatch
     {
@@ -64,6 +105,64 @@ namespace AdvShields
             }
         }
     }
+
+    [HarmonyPatch(typeof(ProjectileCastingSystem), "Cast", new Type[] { typeof(ProjectileImpactState), typeof(ISettablePositionAndRotation), typeof(Vector3), typeof(Vector3), typeof(Vector3), typeof(float), typeof(Vector3), typeof(int), typeof(Color) })]
+    internal class ProjectileCastingSystem_Cast_Patch
+    {
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            List<string> searchList = new List<string>()
+            {
+                "call static ActivePlayAreaCalculator ActivePlayAreaCalculator::get_Instance()",
+                "ldarg.s 4",
+                "ldarg.s 5",
+                "ldarg.s 6",
+                "ldc.r4 4",
+            };
+
+            List<CodeInstruction> codes = instructions.ToList();
+            int targetIndex = CIL_Control.Search(codes, searchList);
+
+            if (targetIndex != -1)
+            {
+                codes[targetIndex + 4] = new CodeInstruction(OpCodes.Ldc_R4, 1500f);
+            }
+
+            return codes.AsEnumerable();
+        }
+    }
+
+    /*
+    [HarmonyPatch(typeof(Fortress), "FixedUpdate", new Type[] { typeof(ITimeStep) })]
+    internal class Fortress_FixedUpdate_Patch
+    {
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            List<string> searchList = new List<string>()
+            {
+                "ldarg.0 NULL",
+                "call virtual BrilliantSkies.Ftd.Constructs.Modules.All.PartPhysics.IPartPhysics AllConstruct::get_PartPhysics()",
+                "callvirt abstract virtual BrilliantSkies.Common.Masses.ConstructableMass BrilliantSkies.Ftd.Constructs.Modules.All.PartPhysics.IPartPhysics::get_TotalMass()",
+                "callvirt virtual UnityEngine.Vector3 BrilliantSkies.Common.Masses.ConstructableMass::get_GCOM()",
+                "ldfld System.Single UnityEngine.Vector3::y"
+            };
+
+            List<CodeInstruction> codes = instructions.ToList();
+            int targetIndex = CIL_Control.Search(codes, searchList);
+
+            if (targetIndex != -1)
+            {
+                codes[targetIndex + 0] = new CodeInstruction(OpCodes.Nop);
+                codes[targetIndex + 1] = new CodeInstruction(OpCodes.Nop);
+                codes[targetIndex + 2] = new CodeInstruction(OpCodes.Nop);
+                codes[targetIndex + 3] = new CodeInstruction(OpCodes.Nop);
+                codes[targetIndex + 4] = new CodeInstruction(OpCodes.Ldc_R4, 0f);
+            }
+
+            return codes.AsEnumerable();
+        }
+    }
+    */
 
     /*
     [Serializable]
