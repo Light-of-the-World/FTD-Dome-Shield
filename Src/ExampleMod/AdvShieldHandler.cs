@@ -31,7 +31,7 @@ namespace AdvShields
 
         public float GetCurrentHealth()
         {
-            return controller.ShieldStats.Energy - CurrentDamageSustained;
+            return controller.ShieldStats.MaxEnergy - CurrentDamageSustained;
         }
 
         public AllConstruct GetC()
