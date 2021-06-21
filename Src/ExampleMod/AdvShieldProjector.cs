@@ -349,7 +349,7 @@ namespace AdvShields
             {
                 module_Hot.TemperatureIncreaseUnderFullUsagePerSecond = (float)(ShieldData.Width * (double)ShieldData.Height * driveAfterFactoring * 0.100000001490116);
                 module_Hot.AddUsage(PowerUse.FractionOfPowerRequestedThatWasProvided);
-                ShieldSound.me.NoiseHere(GameWorldPosition, driveAfterFactoring, 1f);
+                //ShieldSound.me.NoiseHere(GameWorldPosition, driveAfterFactoring, 1f);
 
                 if (Net.NetworkType == NetworkType.Client || (double)GameTimer.Instance.TimeCache <= reliabilityTimeCheck)
                 {
