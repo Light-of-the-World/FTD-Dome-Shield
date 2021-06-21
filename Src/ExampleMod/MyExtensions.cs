@@ -95,6 +95,7 @@ namespace AdvShields
                 GridCastHit hit = GridHitPool.Pool.Acquire();
                 hit.Setup(hitPointInLocal, allConstructBlock.GameObject, range, HitSource.Block, results.Direction);
                 hit.DamageableObject = item.ShieldHandler;
+                hit.OutPointGlobal = hitPointIn;
                 hit.From = BarrierCondition.Unknown;
 
                 item.PlayShieldHit(hitPointIn);

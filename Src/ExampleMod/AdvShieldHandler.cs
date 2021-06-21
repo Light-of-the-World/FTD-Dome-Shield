@@ -1,9 +1,8 @@
-﻿using AdvShields.Models;
-using AdvShields.Behaviours;
+﻿using AdvShields.Behaviours;
+using AdvShields.Models;
 using BrilliantSkies.Core.Threading;
 using BrilliantSkies.Ftd.DamageModels;
 using HarmonyLib;
-using System;
 using UnityEngine;
 
 namespace AdvShields
