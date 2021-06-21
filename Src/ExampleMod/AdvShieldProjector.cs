@@ -267,6 +267,7 @@ namespace AdvShields
             {
                 text_0 = "This shield is turned on";
             }
+            //float thingb = AdvShieldStatus.Fragility;
 
             float currentHealth = ShieldHandler.GetCurrentHealth();
             string text_1 = "Shield is fully charged";
@@ -275,7 +276,7 @@ namespace AdvShields
             if (ShieldHandler.CurrentDamageSustained > 0.0f)
             {
                 float secondsSinceLastHit = UnityEngine.Time.time - ShieldHandler.TimeSinceLastHit;
-                float timeRemaining = AdvShieldHandler.WaitTime - secondsSinceLastHit;
+                float timeRemaining = 20  - secondsSinceLastHit;
 
                 if (timeRemaining <= 0.0f)
                 {

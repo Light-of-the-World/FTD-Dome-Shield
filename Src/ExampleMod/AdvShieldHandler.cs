@@ -9,7 +9,7 @@ namespace AdvShields
 {
     public class AdvShieldHandler : IDamageable
     {
-        public const float WaitTime = 30.0f;
+        public const float WaitTime = 20.0f;
 
         public const float BaseSurface = 1256;
 
@@ -28,6 +28,10 @@ namespace AdvShields
         public Elipse Shape { get; set; }
 
         public Vector3 GridcastHit { get; set; }
+
+        public float MaxHealth { get; set; }
+
+        public int Energy;
 
         public float GetCurrentHealth()
         {
@@ -79,6 +83,7 @@ namespace AdvShields
             }
 
             float maxEnergy = stats.MaxEnergy;
+            float MaxHealth = stats.MaxEnergy;
 
             if (CurrentDamageSustained >= maxEnergy)
             {
@@ -100,7 +105,7 @@ namespace AdvShields
 
         public void Update()
         {
-            if (Time.time - TimeSinceLastHit < WaitTime) return;
+            if (Time.time - TimeSinceLastHit < 20f) return;
             if (CurrentDamageSustained == 0.0f) return;
 
             LaserNode laserNode = controller.ConnectLaserNode;
@@ -121,7 +126,7 @@ namespace AdvShields
                 CurrentDamageSustained -= pulsedReturn.Energy;
             }
 
-            if (CurrentDamageSustained <= 0)
+            if (CurrentDamageSustained <=0)
             {
                 controller.ShieldData.Type.Us = enumShieldDomeState.On;
                 CurrentDamageSustained = 0.0f;
