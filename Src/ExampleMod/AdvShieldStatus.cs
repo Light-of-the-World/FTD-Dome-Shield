@@ -56,7 +56,7 @@ namespace AdvShields
                 float ap = LaserConstants.GetAp(doublers, pumps, true);
                 MaxEnergy = laserNode.GetMaximumEnergy();
                 Energy = laserNode.GetTotalEnergyAvailable() / surfaceFactor;
-                ArmorClass = ap * 0.5f * (Energy / MaxEnergy);
+                ArmorClass = ap * 0.5f / (Fragility/2) * (Energy / MaxEnergy);
 
             }
 
