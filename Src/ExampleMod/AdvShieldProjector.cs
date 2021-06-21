@@ -101,9 +101,9 @@ namespace AdvShields
 
         public AdvShieldStatus ShieldStats { get; set; }
 
-        public AdvShieldData ShieldData { get; set; } = new AdvShieldData(0U);
+        public AdvShieldData ShieldData { get; set; } = new AdvShieldData(0u);
 
-        public AdvShieldVisualData VisualData { get; set; } = new AdvShieldVisualData(1);
+        public AdvShieldVisualData VisualData { get; set; } = new AdvShieldVisualData(1u);
 
         public LaserNode ConnectLaserNode { get; set; }
 
@@ -111,7 +111,7 @@ namespace AdvShields
 
         public VarIntClamp Priority { get; set; } = new VarIntClamp(0, -50, 50, NoLimitMode.None);
 
-        public PowerUserData PriorityData { get; set; } = new PowerUserData(34852U);
+        public PowerUserData PriorityData { get; set; } = new PowerUserData(34852u);
 
         public bool IsActive
         {
@@ -153,7 +153,6 @@ namespace AdvShields
             velocityMeasurement = new VelocityMeasurement(new UniversePositionReturnBlockInMainFrame(this, PositionReturnBlockValidRequirement.Alive));
 
             //Added Get and Set priority
-            //SetShieldSizeAndPosition();
             //PoweredDecoy CurrentPower = base.TargetPower.PowerUse.Us;
             PowerUse = new PowerRequestRecurring(this, PowerRequestType.Shield, PriorityData.Get, PriorityData.Set)
             {
@@ -215,8 +214,6 @@ namespace AdvShields
             }
 
             ConnectLaserNode = LaserComponentSearch();
-            //ConnectToAllLaserSources();
-            //ShieldHandler.Update();
         }
 
         public override void PrepForDelete()
