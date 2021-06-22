@@ -92,8 +92,16 @@ namespace AdvShields
         private float reliabilityTimeCheck;
 
         private float currentStrength;
+        private AdvShieldHandler advShieldHandler;
+
+        public AdvShieldProjector(AdvShieldHandler advShieldHandler)
+        {
+            this.advShieldHandler = advShieldHandler;
+        }
 
         public virtual float SurfaceFactor { get; private set; } = 1; //surface / AdvShieldDome.BaseSurface;
+        
+        public float TimeRemaining { get; set; }
 
         public ShieldDomeBehaviour ShieldDome { get; set; }
 
@@ -147,6 +155,7 @@ namespace AdvShields
             ShieldDome.Initialize();
 
             ShieldStats = new AdvShieldStatus(this);
+            float num = ShieldStats.Fragility;
             ShieldHandler = new AdvShieldHandler(this);
 
             // yay
@@ -267,8 +276,6 @@ namespace AdvShields
             {
                 text_0 = "This shield is turned on";
             }
-            //float thingb = AdvShieldStatus.Fragility;
-
             float currentHealth = ShieldHandler.GetCurrentHealth();
             string text_1 = "Shield is fully charged";
             float progress = 1.0f;
@@ -276,15 +283,15 @@ namespace AdvShields
             if (ShieldHandler.CurrentDamageSustained > 0.0f)
             {
                 float secondsSinceLastHit = UnityEngine.Time.time - ShieldHandler.TimeSinceLastHit;
-                float timeRemaining = 20  - secondsSinceLastHit;
+                float TimeRemaining = 45  -(ShieldStats.Fragility/1.1f) -secondsSinceLastHit;
 
-                if (timeRemaining <= 0.0f)
+                if (this.TimeRemaining <= 0.0f)
                 {
                     text_1 = $"Shield is recharging, {currentHealth / ShieldStats.MaxEnergy * 100:F1} % complete.";
                 }
                 else
                 {
-                    text_1 = $"Time until recharge: {timeRemaining:F1}s";
+                    text_1 = $"Time until recharge: {this.TimeRemaining:F1}s";
                     progress = Mathf.Clamp01(Mathf.SmoothStep(0, 1, secondsSinceLastHit / AdvShieldHandler.WaitTime));
                 }
             }
