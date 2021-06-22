@@ -5,6 +5,7 @@ namespace AdvShields
     public class AdvShieldStatus
     {
         private AdvShieldProjector controller;
+        private AdvShieldHandler advShieldHandler;
 
         public float Energy { get; private set; }
 
@@ -18,6 +19,11 @@ namespace AdvShields
         {
             this.controller = controller;
             Update();
+        }
+
+        public AdvShieldStatus(AdvShieldHandler advShieldHandler)
+        {
+            this.advShieldHandler = advShieldHandler;
         }
 
         public void Update()
@@ -48,7 +54,7 @@ namespace AdvShields
                     }
                     else
                     {
-                        Fragility = allQSwitches * 2;
+                        Fragility = (allQSwitches * allQSwitches)*1.7f;
                     }
                 }
 

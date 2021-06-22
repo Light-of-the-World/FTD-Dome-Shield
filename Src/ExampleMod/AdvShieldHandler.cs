@@ -25,6 +25,10 @@ namespace AdvShields
 
         public float CurrentDamageSustained { get; set; }
 
+        public AdvShieldProjector TimeRemaining { get; set; }
+
+        public AdvShieldStatus ShieldStats { get; set; }
+
         public Elipse Shape { get; set; }
 
         public Vector3 GridcastHit { get; set; }
@@ -32,6 +36,7 @@ namespace AdvShields
         public float MaxHealth { get; set; }
 
         public int Energy;
+
 
         public float GetCurrentHealth()
         {
@@ -84,6 +89,9 @@ namespace AdvShields
 
             float maxEnergy = stats.MaxEnergy;
             float MaxHealth = stats.MaxEnergy;
+            TimeRemaining = new AdvShieldProjector(this);
+            float num = TimeRemaining.TimeRemaining;
+
 
             if (CurrentDamageSustained >= maxEnergy)
             {
@@ -102,10 +110,10 @@ namespace AdvShields
             HitEffectBehaviour behaviour = obj.GetComponent<HitEffectBehaviour>();
             behaviour.Initialize(worldHit, color, magnitude, 1.5f);
         }
-
         public void Update()
         {
-            if (Time.time - TimeSinceLastHit < 20f) return;
+            if (Time.time - TimeSinceLastHit < /*45 - (ShieldStats.Fragility / 1.1f)*/ TimeRemaining) return;
+
             if (CurrentDamageSustained == 0.0f) return;
 
             LaserNode laserNode = controller.ConnectLaserNode;
