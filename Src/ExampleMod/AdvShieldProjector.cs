@@ -267,7 +267,6 @@ namespace AdvShields
             {
                 text_0 = "This shield is turned on";
             }
-            //float thingb = AdvShieldStatus.Fragility;
 
             float currentHealth = ShieldHandler.GetCurrentHealth();
             string text_1 = "Shield is fully charged";
@@ -276,7 +275,7 @@ namespace AdvShields
             if (ShieldHandler.CurrentDamageSustained > 0.0f)
             {
                 float secondsSinceLastHit = UnityEngine.Time.time - ShieldHandler.TimeSinceLastHit;
-                float timeRemaining = 20  - secondsSinceLastHit;
+                float timeRemaining = AdvShieldHandler.WaitTime - secondsSinceLastHit;
 
                 if (timeRemaining <= 0.0f)
                 {
@@ -350,7 +349,7 @@ namespace AdvShields
             {
                 module_Hot.TemperatureIncreaseUnderFullUsagePerSecond = (float)(ShieldData.Width * (double)ShieldData.Height * driveAfterFactoring * 0.100000001490116);
                 module_Hot.AddUsage(PowerUse.FractionOfPowerRequestedThatWasProvided);
-                ShieldSound.me.NoiseHere(GameWorldPosition, driveAfterFactoring, 1f);
+                //ShieldSound.me.NoiseHere(GameWorldPosition, driveAfterFactoring, 1f);
 
                 if (Net.NetworkType == NetworkType.Client || (double)GameTimer.Instance.TimeCache <= reliabilityTimeCheck)
                 {
@@ -392,8 +391,6 @@ namespace AdvShields
         private void SetShieldState(bool b, bool sync)
         {
             if (!ShieldDome.SetState(b) || !sync || !Net.IsServer) return;
-
-            GetConstructableOrSubConstructable().iMultiplayerSyncroniser.RPCRequest_SyncroniseBlock(this, b);
         }
 
         public float GetExcessDriveAfterFactoring()
@@ -463,13 +460,13 @@ namespace AdvShields
             AudioClipDefinition byCollectionName = Configured.i.AudioCollections.GetRandomClipByCollectionName("Shield Hit");
             if (byCollectionName == null) return;
 
-            Pooler.GetPool<AdvSoundManager>().PlaySound(new SoundRequest(byCollectionName, location)
+            /*Pooler.GetPool<AdvSoundManager>().PlaySound(new SoundRequest(byCollectionName, location)
             {
                 Priority = SoundPriority.ShouldHear,
                 Pitch = Aux.Rnd.NextFloat(0.9f, 1.1f),
                 MinDistance = 0.5f,
                 Volume = 0.6f
-            });
+            });*/
         }
 
 
