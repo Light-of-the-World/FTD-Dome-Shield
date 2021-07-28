@@ -1,8 +1,11 @@
 ﻿using AdvShields.Models;
 using BrilliantSkies.Core.UniverseRepresentation;
+using BrilliantSkies.Ftd.Constructs.Modules.All.EMP;
 using BrilliantSkies.Ftd.DamageLogging;
 using BrilliantSkies.Ftd.DamageModels;
 using BrilliantSkies.Ftd.Game.Pools;
+using BrilliantSkies.Ftd.Missiles;
+using BrilliantSkies.Ftd.Missiles.Blueprints;
 using BrilliantSkies.GridCasts;
 using HarmonyLib;
 using System;
@@ -75,8 +78,7 @@ namespace AdvShields
         {
             foreach (AdvShieldProjector item in TypeStorage.GetObjects())
             {
-                AdvShieldData d = item.ShieldData;
-                if (d.Type == enumShieldDomeState.Off) continue;
+                if (item.ShieldData.Type == enumShieldDomeState.Off) continue;
 
                 Elipse elipse = item.ShieldHandler.Shape;
                 elipse.UpdateInfo();
@@ -98,7 +100,8 @@ namespace AdvShields
                 hit.OutPointGlobal = hitPointIn;
                 hit.From = BarrierCondition.Unknown;
 
-                item.PlayShieldHit(hitPointIn);
+                //item.PlayShieldHit(hitPointIn);
+                //commented out
                 results.AddAndSort(hit);
             }
         }
@@ -130,6 +133,47 @@ namespace AdvShields
         }
     }
 
+    [HarmonyPatch(typeof(MissileImpactAndTriggering), "HandleHits", new Type[] { typeof(Vector3) })]
+    internal class MissileImpactAndTriggering_HandleHits_Patch
+    {
+        private static void Postfix(MissileImpactAndTriggering __instance)
+        {
+            Missile _missile = Traverse.Create(__instance).Field("_missile").GetValue<Missile>();
+
+            foreach (AdvShieldProjector item in TypeStorage.GetObjects())
+            {
+                if (item.ShieldData.Type == enumShieldDomeState.Off) continue;
+
+                Elipse elipse = item.ShieldHandler.Shape;
+                elipse.UpdateInfo();
+
+                Vector3 Direction = _missile.Velocity * Time.fixedDeltaTime;
+
+                bool hitSomething = elipse.CheckIntersection(_missile.NosePosition, Direction, out Vector3 hitPointIn, out Vector3 hitNormal);
+                if (!hitSomething) continue;
+
+                float range = (_missile.NosePosition - hitPointIn).magnitude;
+                if (range > Direction.magnitude * 2) continue;
+
+                item.ShieldHandler.GridcastHit = hitPointIn;
+
+                IAllConstructBlock allConstructBlock = item.GetConstructableOrSubConstructable();
+                Vector3 hitPointInLocal = allConstructBlock.SafeGlobalToLocal(hitPointIn);
+
+                float speed = (_missile.Velocity - allConstructBlock.Velocity).magnitude;
+                float damage = _missile.Blueprint.Warheads.ThumpPerMs * speed * _missile.GetHealthDependency(HealthDependency.Damage);
+                float thumpAP = _missile.Blueprint.Warheads.ThumpAP;
+
+                item.ShieldHandler.ApplyDamage(new KineticDamageDescription(_missile.Gunner, damage, thumpAP, true));
+
+                bool safetyOn = !__instance.CheckSafety(item) || !_missile.HasClearedVehicle;
+                _missile.MoveNoseIntoPosition(hitPointIn);
+                _missile.ExplosionHandler.ExplodeNow(allConstructBlock, hitPointInLocal, hitPointIn, safetyOn);
+            }
+        }
+    }
+
+    //[HarmonyPatch] (typeof(ConstructableEmp), "End", new Type[] { typeof Vector3) })]
     /*
     [HarmonyPatch(typeof(Fortress), "FixedUpdate", new Type[] { typeof(ITimeStep) })]
     internal class Fortress_FixedUpdate_Patch
