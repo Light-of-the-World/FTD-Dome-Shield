@@ -267,7 +267,6 @@ namespace AdvShields
             {
                 text_0 = "This shield is turned on";
             }
-            //float thingb = AdvShieldStatus.Fragility;
 
             float currentHealth = ShieldHandler.GetCurrentHealth();
             string text_1 = "Shield is fully charged";
@@ -276,8 +275,7 @@ namespace AdvShields
             if (ShieldHandler.CurrentDamageSustained > 0.0f)
             {
                 float secondsSinceLastHit = UnityEngine.Time.time - ShieldHandler.TimeSinceLastHit;
-                float timeRemaining = 20  - secondsSinceLastHit;
-
+                float timeRemaining = ShieldStats.WaitTime - secondsSinceLastHit;
                 if (timeRemaining <= 0.0f)
                 {
                     text_1 = $"Shield is recharging, {currentHealth / ShieldStats.MaxEnergy * 100:F1} % complete.";
@@ -285,7 +283,7 @@ namespace AdvShields
                 else
                 {
                     text_1 = $"Time until recharge: {timeRemaining:F1}s";
-                    progress = Mathf.Clamp01(Mathf.SmoothStep(0, 1, secondsSinceLastHit / AdvShieldHandler.WaitTime));
+                    progress = Mathf.Clamp01(Mathf.SmoothStep(0, 1, secondsSinceLastHit / ShieldStats.WaitTime));
                 }
             }
 
@@ -350,7 +348,7 @@ namespace AdvShields
             {
                 module_Hot.TemperatureIncreaseUnderFullUsagePerSecond = (float)(ShieldData.Width * (double)ShieldData.Height * driveAfterFactoring * 0.100000001490116);
                 module_Hot.AddUsage(PowerUse.FractionOfPowerRequestedThatWasProvided);
-                ShieldSound.me.NoiseHere(GameWorldPosition, driveAfterFactoring, 1f);
+                //ShieldSound.me.NoiseHere(GameWorldPosition, driveAfterFactoring, 1f);
 
                 if (Net.NetworkType == NetworkType.Client || (double)GameTimer.Instance.TimeCache <= reliabilityTimeCheck)
                 {
@@ -392,8 +390,6 @@ namespace AdvShields
         private void SetShieldState(bool b, bool sync)
         {
             if (!ShieldDome.SetState(b) || !sync || !Net.IsServer) return;
-
-            GetConstructableOrSubConstructable().iMultiplayerSyncroniser.RPCRequest_SyncroniseBlock(this, b);
         }
 
         public float GetExcessDriveAfterFactoring()
@@ -404,7 +400,7 @@ namespace AdvShields
         public void Update()
         {
             ShieldStats.Update();
-            ShieldHandler.Update();
+            ShieldHandler.Update(ShieldStats);
         }
 
         private void ShieldDataSetChangeAction()
@@ -463,13 +459,13 @@ namespace AdvShields
             AudioClipDefinition byCollectionName = Configured.i.AudioCollections.GetRandomClipByCollectionName("Shield Hit");
             if (byCollectionName == null) return;
 
-            Pooler.GetPool<AdvSoundManager>().PlaySound(new SoundRequest(byCollectionName, location)
+            /*Pooler.GetPool<AdvSoundManager>().PlaySound(new SoundRequest(byCollectionName, location)
             {
                 Priority = SoundPriority.ShouldHear,
                 Pitch = Aux.Rnd.NextFloat(0.9f, 1.1f),
                 MinDistance = 0.5f,
                 Volume = 0.6f
-            });
+            });*/
         }
 
 

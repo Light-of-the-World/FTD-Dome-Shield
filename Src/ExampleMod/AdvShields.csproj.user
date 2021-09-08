@@ -5,6 +5,6 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
     <StartAction>Program</StartAction>
-    <StartProgram>C:\Program Files %28x86%29\Steam\steamapps\common\From The Depths\From_The_Depths.exe</StartProgram>
+    <StartProgram>C:\Steam\steamapps\common\From The Depths\From_The_Depths.exe</StartProgram>
   </PropertyGroup>
 </Project>

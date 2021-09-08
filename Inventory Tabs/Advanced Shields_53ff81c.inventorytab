@@ -1,0 +1,24 @@
+{
+  "DisplayName": "Advanced Shields",
+  "ScreenSpacingBeforeTab": 0.0,
+  "ScreenSpacingAfterTab": 0.0,
+  "BuildGuides": {
+    "Guides": []
+  },
+  "Complexity": 0,
+  "DesiredOrder": 8,
+  "PreviewWindowCoords": {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+    "w": 0,
+    "sqrMagnitude": 0
+  },
+  "ToBeDisplayed": true,
+  "CustomScriptName": "",
+  "ComponentId": {
+    "Guid": "53ff81c0-ddd6-4d6c-9a1c-2983893e4b71",
+    "Name": "Advanced Shields"
+  },
+  "Description": "Dome Shield Generators"
+}

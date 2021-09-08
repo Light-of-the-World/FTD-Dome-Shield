@@ -86,8 +86,8 @@
   "ExtraSettings": {
     "CreateListOfTheseBlocks": true,
     "UseCustomName": false,
-    "ExplosionOnDeath": 0,
-    "ViewTheseOptions": false,
+    "ExplosionOnDeath": 2,
+    "ViewTheseOptions": true,
     "UseALowLodRender": true,
     "WaterTight": true,
     "BlockPathfinding": true,
@@ -100,12 +100,12 @@
     "PlaceableOnFortress": true,
     "PlaceableOnStructure": true,
     "PlaceableOnVehicle": true,
-    "PlaceableOnSubConstructable": 2,
+    "PlaceableOnSubConstructable": 1,
     "AutomaticallyGenerateCollider": true,
     "StructuralComponent": false,
-    "EmpSusceptibility": 0.0,
+    "EmpSusceptibility": 1.0,
     "EmpResistivity": 2.0,
-    "EmpDamageFactor": 1.0,
+    "EmpDamageFactor": 4.0,
     "FractionHeatDamagePerMeterPenetration": 0.05,
     "AllowsExhaust": false,
     "AllowsVisibleBandTransmission": false,
@@ -178,7 +178,7 @@
   "InventoryYPosition": 0,
   "InventoryTabOrVariantId": {
     "Reference": {
-      "Guid": "678bde4d-69eb-4241-a40b-c51ad93bfa56",
+      "Guid": "53ff81c0-ddd6-4d6c-9a1c-2983893e4b71",
       "Name": "Advanced Shields"
     },
     "IsValidReference": true

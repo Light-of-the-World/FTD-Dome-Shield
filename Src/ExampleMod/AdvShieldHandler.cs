@@ -9,7 +9,7 @@ namespace AdvShields
 {
     public class AdvShieldHandler : IDamageable
     {
-        public const float WaitTime = 20.0f;
+        public const float BaseWaitTime = 48.0f;
 
         public const float BaseSurface = 1256;
 
@@ -28,10 +28,6 @@ namespace AdvShields
         public Elipse Shape { get; set; }
 
         public Vector3 GridcastHit { get; set; }
-
-        public float MaxHealth { get; set; }
-
-        public int Energy;
 
         public float GetCurrentHealth()
         {
@@ -83,7 +79,6 @@ namespace AdvShields
             }
 
             float maxEnergy = stats.MaxEnergy;
-            float MaxHealth = stats.MaxEnergy;
 
             if (CurrentDamageSustained >= maxEnergy)
             {
@@ -103,30 +98,35 @@ namespace AdvShields
             behaviour.Initialize(worldHit, color, magnitude, 1.5f);
         }
 
-        public void Update()
+        public void Update(AdvShieldStatus ShieldStats)
         {
-            if (Time.time - TimeSinceLastHit < 20f) return;
+            if (Time.time - TimeSinceLastHit < ShieldStats.WaitTime) return;
             if (CurrentDamageSustained == 0.0f) return;
 
             LaserNode laserNode = controller.ConnectLaserNode;
 
             if (laserNode == null) return;
-            if (laserNode.HasToWaitForCharge()) return;
-
+            //            if (laserNode.HasToWaitForCharge()) return;
+            if ((CurrentDamageSustained / ShieldStats.MaxEnergy <= 0.4f)&&(controller.ShieldData.Type.Us ==enumShieldDomeState.Off))
+            {
+                controller.ShieldData.Type.Us = enumShieldDomeState.On;
+                CurrentDamageSustained = ShieldStats.MaxEnergy * 0.4f;//+100;
+            }
+            //Added this^^
             LaserRequestReturn continuousReturn = laserNode.GetCWEnergyAvailable(true);
             LaserRequestReturn pulsedReturn = laserNode.GetPulsedEnergyAvailable(true);
 
-            if (continuousReturn.WorthFiring)
+            if /*((CurrentDamageSustained>0.0f)&&(Time.time - TimeSinceLastHit < ShieldStats.WaitTime))*/(continuousReturn.WorthFiring)
             {
                 CurrentDamageSustained -= continuousReturn.Energy;
             }
 
-            if (pulsedReturn.WorthFiring)
+            if /*((CurrentDamageSustained > 0.0f)&&(Time.time - TimeSinceLastHit < ShieldStats.WaitTime))*/(pulsedReturn.WorthFiring)
             {
                 CurrentDamageSustained -= pulsedReturn.Energy;
             }
 
-            if (CurrentDamageSustained <=0)
+            if (CurrentDamageSustained <= 0)
             {
                 controller.ShieldData.Type.Us = enumShieldDomeState.On;
                 CurrentDamageSustained = 0.0f;

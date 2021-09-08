@@ -1,4 +1,5 @@
 ﻿using System;
+using AdvShields;
 
 namespace AdvShields
 {
@@ -11,8 +12,11 @@ namespace AdvShields
         public float MaxEnergy { get; private set; }
 
         public float ArmorClass { get; private set; }
-        
+
         public float Fragility { get; private set; }
+
+        public float WaitTime { get; set; }
+
 
         public AdvShieldStatus(AdvShieldProjector controller)
         {
@@ -32,6 +36,7 @@ namespace AdvShields
             {
                 int doublers = 0;
                 int pumps = 0;
+                int totalEnergyCapacity = 0;
                 int allQSwitches = 0;
                 foreach (LaserCoupler laserCoupler in laserNode.couplers)
                 {
@@ -46,18 +51,32 @@ namespace AdvShields
                     {
                         Fragility = 40;
                     }
+                    else if (allQSwitches == 1)
+                    {
+                        Fragility = 2;
+                    }
+
+                    else if (allQSwitches == 2) 
+                    {
+                        Fragility = 5;
+                    }
+
+                    else if (allQSwitches==3)
+                    {
+                        Fragility = 10;
+                    }
                     else
                     {
-                        Fragility = allQSwitches * 2;
+                        Fragility = 20;
                     }
                 }
-
+                //Fragility = (allQSwitches * allQSwitches)+1;
                 float surfaceFactor = controller.SurfaceFactor;
-                float ap = LaserConstants.GetAp(doublers, pumps, true);
+                float ap = LaserConstants.GetAp(doublers, pumps, true, totalEnergyCapacity);
                 MaxEnergy = laserNode.GetMaximumEnergy();
                 Energy = laserNode.GetTotalEnergyAvailable() / surfaceFactor;
-                ArmorClass = ap * 0.5f / (Fragility/2) * (Energy / MaxEnergy);
-
+                ArmorClass = ap * 0.5f / (Fragility / 2) / (MaxEnergy / Energy);
+                WaitTime = AdvShieldHandler.BaseWaitTime - Fragility;
             }
 
             /*
