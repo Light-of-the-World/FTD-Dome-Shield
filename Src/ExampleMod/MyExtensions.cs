@@ -218,6 +218,44 @@ namespace AdvShields
         }
     }
 
+    /* [HarmonyPatch(typeof(EmpDamageDescription), "CalculateEmpDamage", new Type[] { typeof(Vector3) })]
+     internal class EmpDamageDescription_CalculateEmpDamage_Patch
+     { private static void PostFix(EmpDamageDescription __instance)
+         {
+             foreach (AdvShieldProjector item in TypeStorage.GetObjects())
+             {
+                 if (item.ShieldData.Type == enumShieldDomeState.On)
+                 { empSusceptibility = 1;
+                     DamageFactor = 4;
+                 }
+
+             } */
+
+   /* [HarmonyPatch(typeof(ParticleCannonEffect), "ApplyDamage", new Type[] { typeof(Vector3) })]
+    internal class ParticleCannonEffect_ApplyDamage_Patch
+    {
+        private static void Postfix(ParticleCannonEffect __instance);
+        {
+
+        
+            
+            foreach (AdvShieldProjector item in TypeStorage.GetObjects())
+            {
+                if (item.ShieldData.Type == enumShieldDomeState.Off) continue;
+
+                Elipse elipse = item.ShieldHandler.Shape;
+        elipse.UpdateInfo();
+                
+            if (elipse.CheckIntersection(position, radius))*/
+            
+            
+           
+    }
+
+
+
+
+
     //[HarmonyPatch] (typeof(ConstructableEmp), "End", new Type[] { typeof Vector3) })]
     /*
     [HarmonyPatch(typeof(Fortress), "FixedUpdate", new Type[] { typeof(ITimeStep) })]
@@ -250,4 +288,3 @@ namespace AdvShields
         }
     }
     */
-}

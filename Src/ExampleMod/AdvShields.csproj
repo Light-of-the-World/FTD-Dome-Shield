@@ -316,7 +316,7 @@
     <Compile Include="AdvShieldData.cs" />
     <Compile Include="Behaviours\HitEffectBehaviour.cs" />
     <Compile Include="Elipse.cs" />
-    <Compile Include="ModPlugin.cs" />
+    <Compile Include="ModStartup.cs" />
     <Compile Include="AdvShieldVisualData.cs" />
     <Compile Include="Models\enumShieldDomeState.cs" />
     <Compile Include="Models\ShaderColorProperty.cs" />
@@ -353,6 +353,9 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="item\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

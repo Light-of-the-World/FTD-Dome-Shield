@@ -1,0 +1,3 @@
+v 3.3.2
+Src/ExampleMod/bin/Release/0Harmony.dll
+Src/ExampleMod/bin/Release/AdvShields.dll
